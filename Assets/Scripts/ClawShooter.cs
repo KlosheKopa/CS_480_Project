@@ -6,6 +6,7 @@ public class ClawShooter : MonoBehaviour
     [Header("Bubble Shooting")]
     public GameObject bubblePrefab;
     public float shootForce = 12f;
+    public float spawnOffset = 0.2f;
 
     [Header("Fire Rate")]
     public float fireRate = 0.8f;
@@ -14,12 +15,24 @@ public class ClawShooter : MonoBehaviour
 
     private InputAction shootAction;
     private Transform cameraTransform;
+    private Collider[] playerColliders;
     private float nextFireTime = 0f;
 
     void Awake()
     {
         shootAction = GetComponentInParent<PlayerInput>().actions["Shoot"];
-        cameraTransform = GetComponentInParent<Camera>().transform;
+
+        Camera playerCamera = GetComponentInParent<Camera>();
+        if (playerCamera != null)
+        {
+            cameraTransform = playerCamera.transform;
+        }
+
+        PlayerInput playerInput = GetComponentInParent<PlayerInput>();
+        if (playerInput != null)
+        {
+            playerColliders = playerInput.GetComponentsInChildren<Collider>(true);
+        }
     }
 
     void OnEnable() => shootAction.Enable();
@@ -36,18 +49,24 @@ public class ClawShooter : MonoBehaviour
 
     void ShootBubble()
     {
-        if (bubblePrefab == null || shootPoint == null) return;
+        if (bubblePrefab == null || shootPoint == null || cameraTransform == null) return;
 
-        // Spawn at the exact tip of the pincer
-        Vector3 spawnPos = shootPoint.position + shootPoint.forward * 0.3f;
+        Vector3 aimDirection = cameraTransform.forward.normalized;
 
-        GameObject bubble = Instantiate(bubblePrefab, spawnPos, cameraTransform.rotation);
+        // Spawn from the claw tip area, but use the camera aim direction for travel.
+        Vector3 spawnPos = shootPoint.position + aimDirection * spawnOffset;
 
-        Rigidbody rb = bubble.GetComponent<Rigidbody>();
-        if (rb != null)
+        GameObject bubble = Instantiate(
+            bubblePrefab,
+            spawnPos,
+            Quaternion.LookRotation(aimDirection)
+        );
+
+        BubbleBehavior bubbleBehavior = bubble.GetComponent<BubbleBehavior>();
+        if (bubbleBehavior != null)
         {
-            // This line is the key: shoot where the CAMERA is looking
-            rb.linearVelocity = cameraTransform.forward * shootForce;
+            bubbleBehavior.forwardSpeed = shootForce;
+            bubbleBehavior.Initialize(aimDirection, playerColliders);
         }
     }
 }
