@@ -8,6 +8,11 @@ public class PlayerController : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 2f;
 
+    [Header("Audio")]
+    public AudioSource footstepAudioSource;
+    public AudioSource jumpAudioSource;
+    public AudioClip jumpClip;
+
     [Header("Mouse Look")]
     public float mouseSensitivity = 100f;
 
@@ -63,9 +68,34 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(move * walkSpeed * Time.deltaTime);
 
+        bool isMoving = moveInput.sqrMagnitude > 0.01f;
+        bool shouldPlayFootsteps = isGrounded && isMoving;
+
+        if (footstepAudioSource != null)
+        {
+            if (shouldPlayFootsteps)
+            {
+                if (!footstepAudioSource.isPlaying)
+                {
+                    footstepAudioSource.Play();
+                }
+            }
+            else if (footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Stop();
+            }
+        }
+
         // === JUMP ===
         if (jumpAction.triggered && isGrounded)
+        {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+            if (jumpAudioSource != null && jumpClip != null)
+            {
+                jumpAudioSource.PlayOneShot(jumpClip);
+            }
+        }
 
         // Gravity
         velocity.y += gravity * Time.deltaTime;

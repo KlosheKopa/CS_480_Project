@@ -8,6 +8,10 @@ public class BubbleBehavior : MonoBehaviour
     public float riseSpeedNearEnd = 1.5f;
     public float riseStartTime = 2.5f;
 
+    [Header("Audio")]
+    public AudioClip bubblePopClip;
+    [Range(0f, 1f)] public float bubblePopVolume = 1f;
+
     private Vector3 moveDirection = Vector3.forward;
     private float timeAlive = 0f;
     private Collider bubbleCollider;
@@ -62,6 +66,11 @@ public class BubbleBehavior : MonoBehaviour
 
         if (timeAlive >= lifetime)
         {
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
             Destroy(gameObject);
         }
     }

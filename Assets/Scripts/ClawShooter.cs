@@ -7,6 +7,8 @@ public class ClawShooter : MonoBehaviour
     public GameObject bubblePrefab;
     public float shootForce = 12f;
     public float spawnOffset = 0.2f;
+    public AudioClip bubbleShootClip;
+    [Range(0f, 1f)] public float bubbleShootVolume = 1f;
 
     [Header("Fire Rate")]
     public float fireRate = 0.8f;
@@ -67,6 +69,11 @@ public class ClawShooter : MonoBehaviour
         {
             bubbleBehavior.forwardSpeed = shootForce;
             bubbleBehavior.Initialize(aimDirection, playerColliders);
+        }
+
+        if (bubbleShootClip != null)
+        {
+            AudioSource.PlayClipAtPoint(bubbleShootClip, shootPoint.position, bubbleShootVolume);
         }
     }
 }

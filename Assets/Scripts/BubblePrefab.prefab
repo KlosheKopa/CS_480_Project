@@ -155,3 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleBehavior
   forwardSpeed: 12
   lifetime: 3.5
+  riseSpeedNearEnd: 1.5
+  riseStartTime: 2.5
+  bubblePopClip: {fileID: 8300000, guid: 36a65a92f6efe48f88d2827fe81e4be9, type: 3}
+  bubblePopVolume: 0.969
