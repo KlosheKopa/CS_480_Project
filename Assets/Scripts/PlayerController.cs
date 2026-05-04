@@ -8,180 +8,109 @@ public class PlayerController : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 2f;
 
+    [Header("Audio")]
+    public AudioSource footstepAudioSource;
+    public AudioSource jumpAudioSource;
+    public AudioClip jumpClip;
+
     [Header("Mouse Look")]
     public float mouseSensitivity = 100f;
-
-    [Header("Dash")]
-    public float dashSpeed = 84f;
-    public float dashDuration = 0.35f;
-
-    [Header("Bounce")]
-    public float bounceDuration = 0.25f;
-
-    [Header("Pause Menu")]
-    public GameObject pausePanel;
-
-    [Header("Stats Screen")]
-    public ShowPlayerStatsUI statsUI;
 
     private CharacterController controller;
     private Vector3 velocity;
     private bool isGrounded;
 
-    public Transform playerCamera;
+    public Transform playerCamera;   // Drag your Main Camera (child) here
 
+    // New Input System references
     private PlayerInput playerInput;
     private InputAction moveAction;
     private InputAction lookAction;
     private InputAction jumpAction;
-    private InputAction pauseAction;
-    private InputAction giveEXPAction;
-    private InputAction showStatsAction;
-
-    private PlayerHealth playerHealth;
-    private PlayerStats stats;
 
     private float xRotation = 0f;
-    private float dashTimeRemaining = 0f;
-    private Vector3 currentDashVelocity;
-    private float bounceTimeRemaining = 0f;
-    private Vector3 currentBounceVelocity;
-
-    private bool isPaused = false;
-    private Vector3 startPosition;
-
-    private bool cameraInitialized = false;
 
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
-        playerHealth = GetComponent<PlayerHealth>();
-        stats = GetComponent<PlayerStats>();
 
+        // Link the actions from your PlayerControls asset
         moveAction = playerInput.actions["Move"];
         lookAction = playerInput.actions["Look"];
         jumpAction = playerInput.actions["Jump"];
-        pauseAction = playerInput.actions["Pause"];
-        giveEXPAction = playerInput.actions["GiveEXP"];
-        showStatsAction = playerInput.actions["ShowStats"];
     }
 
-    void OnEnable() => showStatsAction.Enable();
-    void OnDisable() => showStatsAction.Disable();
-
-    void Start()
+    void OnEnable()
     {
-        if (pausePanel != null) pausePanel.SetActive(false);
-        startPosition = transform.position;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        moveAction.Enable();
+        lookAction.Enable();
+        jumpAction.Enable();
     }
 
-    void LateUpdate()
+    void OnDisable()
     {
-        if (!cameraInitialized && playerCamera != null)
-        {
-            cameraInitialized = true;
-            xRotation = 0f;
-            playerCamera.localRotation = Quaternion.Euler(0f, 0f, 0f);
-        }
+        moveAction.Disable();
+        lookAction.Disable();
+        jumpAction.Disable();
     }
 
     void Update()
     {
-        if (transform.position.y <= -10f)
-        {
-            transform.position = startPosition;
-            velocity = Vector3.zero;
-            return;
-        }
-
+        // Ground check
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
             velocity.y = -2f;
 
-        if (pauseAction.WasPressedThisFrame())
-        {
-            if (LevelUpManager.Instance != null && LevelUpManager.Instance.levelUpPanel.activeSelf)
-                return;
-
-            if (playerHealth != null && playerHealth.isDead) return;
-
-            isPaused = !isPaused;
-            Time.timeScale = isPaused ? 0f : 1f;
-            if (pausePanel != null) pausePanel.SetActive(isPaused);
-        }
-
-        if (isPaused) return;
-
-        if (giveEXPAction.WasPressedThisFrame())
-        {
-            if (stats != null) stats.AddEXP(100); //Pressing 0 Key, gives 100 EXP.
-        }
-
-        // TAB = Show Stats
-        if (showStatsAction.IsPressed())
-        {
-            if (statsUI != null) statsUI.ShowStatsPanel();
-        }
-        else
-        {
-            if (statsUI != null) statsUI.HideStatsPanel();
-        }
-
+        // === MOVEMENT (Vector3 from Chapter 3) ===
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+
         controller.Move(move * walkSpeed * Time.deltaTime);
 
+        bool isMoving = moveInput.sqrMagnitude > 0.01f;
+        bool shouldPlayFootsteps = isGrounded && isMoving;
+
+        if (footstepAudioSource != null)
+        {
+            if (shouldPlayFootsteps)
+            {
+                if (!footstepAudioSource.isPlaying)
+                {
+                    footstepAudioSource.Play();
+                }
+            }
+            else if (footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Stop();
+            }
+        }
+
+        // === JUMP ===
         if (jumpAction.triggered && isGrounded)
+        {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
+            if (jumpAudioSource != null && jumpClip != null)
+            {
+                jumpAudioSource.PlayOneShot(jumpClip);
+            }
+        }
+
+        // Gravity
         velocity.y += gravity * Time.deltaTime;
-
-        if (dashTimeRemaining > 0)
-        {
-            dashTimeRemaining -= Time.deltaTime;
-            controller.Move(currentDashVelocity * Time.deltaTime);
-            currentDashVelocity = Vector3.Lerp(currentDashVelocity, Vector3.zero, Time.deltaTime * 8f);
-        }
-
-        if (bounceTimeRemaining > 0)
-        {
-            bounceTimeRemaining -= Time.deltaTime;
-            controller.Move(currentBounceVelocity * Time.deltaTime);
-        }
-
         controller.Move(velocity * Time.deltaTime);
 
+        // === MOUSE LOOK ===
         Vector2 lookInput = lookAction.ReadValue<Vector2>();
+
         float mouseX = lookInput.x * mouseSensitivity * Time.deltaTime;
         float mouseY = lookInput.y * mouseSensitivity * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        if (playerCamera != null)
-            playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-
+        playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
-    }
-
-    public void PerformDash()
-    {
-        Vector2 moveInput = moveAction.ReadValue<Vector2>();
-        Vector3 dashDirection = (moveInput.sqrMagnitude < 0.1f) ? -transform.forward : (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
-
-        float finalDashSpeed = dashSpeed * (stats != null ? stats.dashDistanceMultiplier : 1f);
-        currentDashVelocity = dashDirection * finalDashSpeed;
-        dashTimeRemaining = dashDuration;
-    }
-
-    public void BounceBack(Vector3 bounceVelocity)
-    {
-        currentBounceVelocity = bounceVelocity;
-        currentBounceVelocity.y = 4f;
-        bounceTimeRemaining = bounceDuration;
     }
 }

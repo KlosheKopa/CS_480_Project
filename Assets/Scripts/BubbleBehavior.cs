@@ -2,63 +2,76 @@ using UnityEngine;
 
 public class BubbleBehavior : MonoBehaviour
 {
-    [Header("Bubble Settings")]
-    public float lifeTime = 3f;
-    public float upwardForce = 3f;
-    public float floatDelay = 1f;
-    public float damage = 10f;
+    [Header("Movement")]
+    public float forwardSpeed = 12f;
+    public float lifetime = 3.5f;
+    public float riseSpeedNearEnd = 1.5f;
+    public float riseStartTime = 2.5f;
 
-    private Rigidbody rb;
-    private float timer = 0f;
-    private float ignoreCollisionTime = 0.15f;
-    private bool hasHit = false;
+    [Header("Audio")]
+    public AudioClip bubblePopClip;
+    [Range(0f, 1f)] public float bubblePopVolume = 1f;
+
+    private Vector3 moveDirection = Vector3.forward;
+    private float timeAlive = 0f;
+    private Collider bubbleCollider;
+    private Rigidbody bubbleRigidbody;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-    }
+        bubbleCollider = GetComponent<Collider>();
+        bubbleRigidbody = GetComponent<Rigidbody>();
 
-    void Start()
-    {
-        if (rb != null) rb.useGravity = false;
-    }
-
-    void FixedUpdate()
-    {
-        timer += Time.fixedDeltaTime;
-
-        if (timer > floatDelay && rb != null)
-            rb.AddForce(Vector3.up * upwardForce, ForceMode.Acceleration);
-
-        if (timer >= lifeTime)
-            Destroy(gameObject);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        // Ignore ANY part of the player (root + ClawArm + any future children)
-        if (other.transform.root.CompareTag("Player"))
+        if (bubbleRigidbody != null)
         {
-            hasHit = false;   // reset so it can still hit enemies later
+            bubbleRigidbody.useGravity = false;
+            bubbleRigidbody.isKinematic = true;
+        }
+    }
+
+    public void Initialize(Vector3 aimDirection, Collider[] ignoredColliders)
+    {
+        if (aimDirection.sqrMagnitude > 0.0001f)
+        {
+            moveDirection = aimDirection.normalized;
+            transform.rotation = Quaternion.LookRotation(moveDirection);
+        }
+
+        if (bubbleCollider == null || ignoredColliders == null)
+        {
             return;
         }
 
-        // Normal collision logic (walls, jellyfish, etc.)
-        if (timer < ignoreCollisionTime || hasHit) return;
-
-        hasHit = true;
-
-        if (other.CompareTag("Jellyfish"))
+        foreach (Collider ignoredCollider in ignoredColliders)
         {
-            Jellyfish jelly = other.GetComponent<Jellyfish>();
-            if (jelly != null)
-                jelly.TakeDamage(damage);
+            if (ignoredCollider != null)
+            {
+                Physics.IgnoreCollision(bubbleCollider, ignoredCollider, true);
+            }
+        }
+    }
 
-            Destroy(gameObject);
-            return;
+    void Update()
+    {
+        timeAlive += Time.deltaTime;
+
+        Vector3 frameMove = moveDirection * forwardSpeed;
+
+        if (timeAlive >= riseStartTime)
+        {
+            frameMove += Vector3.up * riseSpeedNearEnd;
         }
 
-        // Destroy on walls/environment
-        Destroy(gameObject);
+        transform.position += frameMove * Time.deltaTime;
+
+        if (timeAlive >= lifetime)
+        {
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
+            Destroy(gameObject);
+        }
     }
 }

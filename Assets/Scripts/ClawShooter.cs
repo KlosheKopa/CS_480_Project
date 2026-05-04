@@ -3,22 +3,38 @@ using UnityEngine.InputSystem;
 
 public class ClawShooter : MonoBehaviour
 {
-    [Header("Shooting")]
+    [Header("Bubble Shooting")]
     public GameObject bubblePrefab;
-    public Transform shootPoint;
-    public Camera playerCamera;
+    public float shootForce = 12f;
+    public float spawnOffset = 0.2f;
+    public AudioClip bubbleShootClip;
+    [Range(0f, 1f)] public float bubbleShootVolume = 1f;
 
-    private PlayerInput playerInput;
+    [Header("Fire Rate")]
+    public float fireRate = 0.8f;
+
+    public Transform shootPoint;   // Tip of the ClawPincer
+
     private InputAction shootAction;
-    private PlayerStats stats;
-
+    private Transform cameraTransform;
+    private Collider[] playerColliders;
     private float nextFireTime = 0f;
 
     void Awake()
     {
-        playerInput = GetComponentInParent<PlayerInput>();
-        shootAction = playerInput.actions["Shoot"];
-        stats = GetComponentInParent<PlayerStats>();
+        shootAction = GetComponentInParent<PlayerInput>().actions["Shoot"];
+
+        Camera playerCamera = GetComponentInParent<Camera>();
+        if (playerCamera != null)
+        {
+            cameraTransform = playerCamera.transform;
+        }
+
+        PlayerInput playerInput = GetComponentInParent<PlayerInput>();
+        if (playerInput != null)
+        {
+            playerColliders = playerInput.GetComponentsInChildren<Collider>(true);
+        }
     }
 
     void OnEnable() => shootAction.Enable();
@@ -26,50 +42,38 @@ public class ClawShooter : MonoBehaviour
 
     void Update()
     {
-        if (stats == null) return;
-
-        bool canShoot = Time.time >= nextFireTime;
-
-        if (stats.isAutoFireUnlocked)
+        if (shootAction.WasPressedThisFrame() && Time.time >= nextFireTime)
         {
-            if (shootAction.IsPressed() && canShoot)
-            {
-                ShootBubble();
-                nextFireTime = Time.time + stats.bubbleFireRate;
-            }
-        }
-        else
-        {
-            if (shootAction.WasPressedThisFrame() && canShoot)
-            {
-                ShootBubble();
-                nextFireTime = Time.time + stats.bubbleFireRate;
-            }
+            ShootBubble();
+            nextFireTime = Time.time + fireRate;
         }
     }
 
-    private void ShootBubble()
+    void ShootBubble()
     {
-        if (bubblePrefab == null || shootPoint == null || playerCamera == null)
+        if (bubblePrefab == null || shootPoint == null || cameraTransform == null) return;
+
+        Vector3 aimDirection = cameraTransform.forward.normalized;
+
+        // Spawn from the claw tip area, but use the camera aim direction for travel.
+        Vector3 spawnPos = shootPoint.position + aimDirection * spawnOffset;
+
+        GameObject bubble = Instantiate(
+            bubblePrefab,
+            spawnPos,
+            Quaternion.LookRotation(aimDirection)
+        );
+
+        BubbleBehavior bubbleBehavior = bubble.GetComponent<BubbleBehavior>();
+        if (bubbleBehavior != null)
         {
-            if (playerCamera == null) playerCamera = Camera.main;
-            if (playerCamera == null) return;
+            bubbleBehavior.forwardSpeed = shootForce;
+            bubbleBehavior.Initialize(aimDirection, playerColliders);
         }
 
-        Vector3 spawnPos = shootPoint.position;
-        spawnPos += playerCamera.transform.right * -0.15f;
-
-        GameObject bubble = Instantiate(bubblePrefab, spawnPos, Quaternion.identity);
-
-        // Pass live stats to the bubble
-        BubbleBehavior bb = bubble.GetComponent<BubbleBehavior>();
-        if (bb != null)
-            bb.damage = stats.bubbleDamage;          
-
-        Rigidbody rb = bubble.GetComponent<Rigidbody>();
-        if (rb != null)
+        if (bubbleShootClip != null)
         {
-            rb.linearVelocity = playerCamera.transform.forward * stats.bubbleSpeed;
+            AudioSource.PlayClipAtPoint(bubbleShootClip, shootPoint.position, bubbleShootVolume);
         }
     }
 }
