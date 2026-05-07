@@ -2,76 +2,81 @@ using UnityEngine;
 
 public class BubbleBehavior : MonoBehaviour
 {
-    [Header("Movement")]
-    public float forwardSpeed = 12f;
-    public float lifetime = 3.5f;
-    public float riseSpeedNearEnd = 1.5f;
-    public float riseStartTime = 2.5f;
+    [Header("Bubble Settings")]
+    public float lifeTime = 3f;
+    public float upwardForce = 3f;
+    public float floatDelay = 1f;
+    public float damage = 10f;
 
     [Header("Audio")]
     public AudioClip bubblePopClip;
     [Range(0f, 1f)] public float bubblePopVolume = 1f;
 
-    private Vector3 moveDirection = Vector3.forward;
-    private float timeAlive = 0f;
-    private Collider bubbleCollider;
-    private Rigidbody bubbleRigidbody;
+    private Rigidbody rb;
+    private float timer = 0f;
+    private float ignoreCollisionTime = 0.15f;
+    private bool hasHit = false;
 
     void Awake()
     {
-        bubbleCollider = GetComponent<Collider>();
-        bubbleRigidbody = GetComponent<Rigidbody>();
-
-        if (bubbleRigidbody != null)
-        {
-            bubbleRigidbody.useGravity = false;
-            bubbleRigidbody.isKinematic = true;
-        }
+        rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(Vector3 aimDirection, Collider[] ignoredColliders)
+    void Start()
     {
-        if (aimDirection.sqrMagnitude > 0.0001f)
-        {
-            moveDirection = aimDirection.normalized;
-            transform.rotation = Quaternion.LookRotation(moveDirection);
-        }
-
-        if (bubbleCollider == null || ignoredColliders == null)
-        {
-            return;
-        }
-
-        foreach (Collider ignoredCollider in ignoredColliders)
-        {
-            if (ignoredCollider != null)
-            {
-                Physics.IgnoreCollision(bubbleCollider, ignoredCollider, true);
-            }
-        }
+        if (rb != null) rb.useGravity = false;
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        timeAlive += Time.deltaTime;
+        timer += Time.fixedDeltaTime;
 
-        Vector3 frameMove = moveDirection * forwardSpeed;
+        if (timer > floatDelay && rb != null)
+            rb.AddForce(Vector3.up * upwardForce, ForceMode.Acceleration);
 
-        if (timeAlive >= riseStartTime)
-        {
-            frameMove += Vector3.up * riseSpeedNearEnd;
-        }
-
-        transform.position += frameMove * Time.deltaTime;
-
-        if (timeAlive >= lifetime)
+        if (timer >= lifeTime)
         {
             if (bubblePopClip != null)
             {
                 AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
             }
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Ignore ANY part of the player (root + ClawArm + any future children)
+        if (other.transform.root.CompareTag("Player"))
+        {
+            hasHit = false;   // reset so it can still hit enemies later
+            return;
+        }
+
+        // Normal collision logic (walls, jellyfish, etc.)
+        if (timer < ignoreCollisionTime || hasHit) return;
+
+        hasHit = true;
+
+        if (other.CompareTag("Jellyfish"))
+        {
+            Jellyfish jelly = other.GetComponent<Jellyfish>();
+            if (jelly != null)
+                jelly.TakeDamage(damage);
 
             Destroy(gameObject);
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+            return;
+        }
+
+        // Destroy on walls/environment
+        Destroy(gameObject);
+        if (bubblePopClip != null)
+        {
+            AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
         }
     }
 }
