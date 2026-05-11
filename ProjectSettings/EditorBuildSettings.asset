@@ -5,9 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/Shrimp Scene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 992b6b70d894f4c67b62d5ed3f0f043d
   - enabled: 1
     path: Assets/Scenes/Alpha.unity
     guid: b9921e1c0b8b7b7468afbb7f03bb83d5
