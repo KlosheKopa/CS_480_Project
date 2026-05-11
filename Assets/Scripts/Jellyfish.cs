@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class Jellyfish : MonoBehaviour
 {
@@ -10,26 +11,44 @@ public class Jellyfish : MonoBehaviour
     public float maxChaseRange = 20f;
     public float attackDamage = 10f;
     public float attackCooldown = 1.5f;
+    public int experience = 5;
+
+    [Header("Drops")]
+    public GameObject greenFishPrefab; // Drag your green fish prefab here
+    public int dropEveryXItems = 3;
 
     [Header("Height Limit")]
     public float maxHeight = 15f;
     public float returnToGroundY = 1.25f;
     public float highAndFarTimeRequired = 2f;
 
-    private Transform player;
+    private static int totalKills = 0;
+    public Transform player;
     private Rigidbody rb;
     private Collider col;
     private float currentHealth;
+    public float CurrentHealth => currentHealth;
     private float lastAttackTime = 0f;
     public bool isDead = false;
-
+    public event Action OnDeath;
     private float highAndFarTimer = 0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        player = GameObject.FindWithTag("Player").transform;
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
+            else
+            {
+                Debug.LogError("Boss cannot find Player! Make sure your Player object has the 'Player' tag.");
+            }
+        }
         currentHealth = maxHealth;
         Debug.Log($"Jellyfish spawned with {currentHealth} HP");
     }
@@ -99,11 +118,21 @@ public class Jellyfish : MonoBehaviour
     {
         isDead = true;
 
+        totalKills++;
+        if (greenFishPrefab != null && totalKills % dropEveryXItems == 0)
+        {
+            // Spawns the fish at the current jellyfish position
+            Instantiate(greenFishPrefab, transform.position + Vector3.up, Quaternion.identity);
+            Debug.Log($"Kill {totalKills}: Green Fish dropped!");
+        }
+
+        OnDeath?.Invoke();
+
         // === NEW: Award 1 EXP to the player ===
         PlayerStats playerStats = GameObject.FindWithTag("Player").GetComponent<PlayerStats>();
         if (playerStats != null)
         {
-            playerStats.AddEXP(1);
+            playerStats.AddEXP(experience);
             Debug.Log("Jellyfish killed - Awarded 1 EXP to player");
         }
 
@@ -184,6 +213,17 @@ public class Jellyfish : MonoBehaviour
                 playerHealth.TakeDamage(attackDamage);
                 lastAttackTime = Time.time;
             }
+        }
+    }
+
+    void SpawnGreenFish()
+    {
+        if (greenFishPrefab != null)
+        {
+            // Spawn at the jellyfish's position with a slight lift
+            Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
+            Instantiate(greenFishPrefab, spawnPos, Quaternion.identity);
+            Debug.Log("Green Fish Dropped!");
         }
     }
 }

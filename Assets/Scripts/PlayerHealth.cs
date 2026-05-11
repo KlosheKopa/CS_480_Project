@@ -143,6 +143,12 @@ public class PlayerHealth : MonoBehaviour
             yield return null;
         }
 
-        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(1.0f);
+
+        // Trigger the Manager to show buttons and unlock mouse
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ShowGameOver();
+        }
     }
 }
