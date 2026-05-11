@@ -7,10 +7,12 @@ public class UltimateEnemySpawner : MonoBehaviour
     [Header("References")]
     public GameObject enemyPrefab;
     public Terrain targetTerrain;
+    public GameObject controlHintUI;
 
     [Header("Spawn Settings")]
     public int maxEnemies = 10;
     public float spawnDelay = 2.5f;
+    public float initialStartDelay = 10f;
     public float edgeBuffer = 10f;
     public float heightOffset = 0.2f;
 
@@ -23,25 +25,49 @@ public class UltimateEnemySpawner : MonoBehaviour
     public float navMeshSearchRadius = 5f;
 
     private int currentEnemyCount = 0;
+    private bool canSpawn = false;
 
     void Start()
     {
         // Auto-assign terrain if left empty
         if (targetTerrain == null) targetTerrain = Terrain.activeTerrain;
 
-        StartCoroutine(SpawnRoutine());
+        StartCoroutine(CombinedSpawnRoutine());
     }
 
-    IEnumerator SpawnRoutine()
+    IEnumerator CombinedSpawnRoutine()
     {
+        // 1. Show the UI
+        if (controlHintUI != null) controlHintUI.SetActive(true);
+
+        float timer = 0f;
+        bool skipWait = false;
+
+        // 2. Wait for 10 seconds OR until 'P' is pressed
+        while (timer < 10f)
+        {
+            timer += Time.unscaledDeltaTime;
+
+            // Check for 'P' key press using the New Input System
+            if (UnityEngine.InputSystem.Keyboard.current.pKey.wasPressedThisFrame)
+            {
+                skipWait = true;
+                break;
+            }
+
+            yield return null;
+        }
+
+        // 3. Hide UI and start the infinite spawning loop
+        if (controlHintUI != null) controlHintUI.SetActive(false);
+        Debug.Log(skipWait ? "Started early via P key" : "Started after 10s timer");
+
         while (true)
         {
-            // Only try to spawn if we are under the limit
             if (currentEnemyCount < maxEnemies)
             {
                 SpawnEnemyNearPlayer();
             }
-            // Wait for the delay before checking again
             yield return new WaitForSeconds(spawnDelay);
         }
     }

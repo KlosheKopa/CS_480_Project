@@ -13,7 +13,7 @@ public static class CreateMainMenuScene
 {
     private const string PosterPath = "Assets/UI_Sprites/game_poster.png";
     private const string ScenePath = "Assets/Scenes/MainMenu.unity";
-    private const string GameScenePath = "Assets/Scenes/SampleScene.unity";
+    private const string GameScenePath = "Assets/Scenes/Alpha.unity";
 
     [MenuItem("Tools/Create Main Menu Scene")]
     public static void Run()

@@ -13,8 +13,15 @@ public class Jellyfish : MonoBehaviour
     public float attackCooldown = 1.5f;
     public int experience = 5;
 
+    [Header("Audio Clips")] // Added these slots
+    public AudioClip floatingSound;    // floating_sound.mp3
+    public AudioClip chaseSound;       // chase_sounds.mp3
+    public AudioClip attackSound;      // jelly_attack.mp3
+    public AudioClip hurtSound;        // jelly_hurt.mp3
+    public AudioClip deathSound;       // jelly_dead.mp3
+
     [Header("Drops")]
-    public GameObject greenFishPrefab; // Drag your green fish prefab here
+    public GameObject greenFishPrefab;
     public int dropEveryXItems = 3;
 
     [Header("Height Limit")]
@@ -26,17 +33,28 @@ public class Jellyfish : MonoBehaviour
     public Transform player;
     private Rigidbody rb;
     private Collider col;
+    private AudioSource audioSource; // Added reference
     private float currentHealth;
     public float CurrentHealth => currentHealth;
     private float lastAttackTime = 0f;
     public bool isDead = false;
     public event Action OnDeath;
     private float highAndFarTimer = 0f;
+    private bool isChasing = false; // To track audio state
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        audioSource = GetComponent<AudioSource>();
+
+        if (floatingSound != null)
+        {
+            audioSource.clip = floatingSound;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -63,9 +81,15 @@ public class Jellyfish : MonoBehaviour
         {
             Vector3 direction = (player.position - transform.position).normalized;
             rb.linearVelocity = direction * moveSpeed;
+            if (!isChasing && chaseSound != null)
+            {
+                audioSource.PlayOneShot(chaseSound);
+                isChasing = true;
+            }
         }
         else
         {
+            isChasing = false;
             rb.linearVelocity = new Vector3(0, Mathf.Sin(Time.time) * 1f, 0);
         }
 
@@ -105,7 +129,9 @@ public class Jellyfish : MonoBehaviour
         float oldHealth = currentHealth;
         currentHealth -= damage;
 
-        Debug.Log($"[JELLYFISH DAMAGE] Took {damage} damage | Health: {oldHealth} → {currentHealth} | Frame: {Time.frameCount}");
+        if (hurtSound != null) audioSource.PlayOneShot(hurtSound);
+
+        Debug.Log($"[JELLYFISH DAMAGE] Took {damage} damage | Health: {oldHealth} ? {currentHealth} | Frame: {Time.frameCount}");
 
         if (currentHealth <= 0)
         {
@@ -117,6 +143,12 @@ public class Jellyfish : MonoBehaviour
     private IEnumerator DeathSequence()
     {
         isDead = true;
+
+        if (audioSource != null)
+        {
+            audioSource.Stop(); // Stop idle/chase sounds
+            if (deathSound != null) audioSource.PlayOneShot(deathSound);
+        }
 
         totalKills++;
         if (greenFishPrefab != null && totalKills % dropEveryXItems == 0)
@@ -194,7 +226,11 @@ public class Jellyfish : MonoBehaviour
         if (playerY > jellyTopY)
         {
             if (playerHealth != null)
+            {
                 playerHealth.TakeDamage(attackDamage);
+                // --- Audio Integration ---
+                if (audioSource != null && attackSound != null) audioSource.PlayOneShot(attackSound);
+            }
 
             PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
             if (pc != null)
@@ -211,6 +247,7 @@ public class Jellyfish : MonoBehaviour
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(attackDamage);
+                if (audioSource != null && attackSound != null) audioSource.PlayOneShot(attackSound);
                 lastAttackTime = Time.time;
             }
         }
