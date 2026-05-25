@@ -66,7 +66,7 @@ public class ClawShooter : MonoBehaviour
         // Pass live stats to the bubble
         BubbleBehavior bb = bubble.GetComponent<BubbleBehavior>();
         if (bb != null)
-            bb.damage = stats.bubbleDamage;          
+            bb.damage = stats.bubbleDamage;
 
         Rigidbody rb = bubble.GetComponent<Rigidbody>();
         if (rb != null)
