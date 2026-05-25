@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Jellyfish
+  - Starfish
+  - SquidSniper
+  - Climbable
   layers:
   - Default
   - TransparentFX

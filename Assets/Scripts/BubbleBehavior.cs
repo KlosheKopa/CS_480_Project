@@ -36,18 +36,18 @@ public class BubbleBehavior : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Ignore ANY part of the player (root + ClawArm + any future children)
+        // Ignore player
         if (other.transform.root.CompareTag("Player"))
         {
-            hasHit = false;   // reset so it can still hit enemies later
+            hasHit = false;
             return;
         }
 
-        // Normal collision logic (walls, jellyfish, etc.)
         if (timer < ignoreCollisionTime || hasHit) return;
 
         hasHit = true;
 
+        // === JELLYFISH ===
         if (other.CompareTag("Jellyfish"))
         {
             Jellyfish jelly = other.GetComponent<Jellyfish>();
@@ -58,7 +58,29 @@ public class BubbleBehavior : MonoBehaviour
             return;
         }
 
-        // Destroy on walls/environment
+        // === STARFISH ===
+        else if (other.CompareTag("Starfish"))
+        {
+            Starfish star = other.GetComponent<Starfish>();
+            if (star != null)
+                star.TakeDamage(damage);
+
+            Destroy(gameObject);
+            return;
+        }
+
+        // === SQUID SNIPER (NEW) ===
+        else if (other.GetComponent<SquidSniper>() != null || other.GetComponentInParent<SquidSniper>() != null)
+        {
+            SquidSniper squid = other.GetComponentInParent<SquidSniper>();
+            if (squid != null)
+                squid.TakeDamage(damage);
+
+            Destroy(gameObject);
+            return;
+        }
+
+        // Destroy on walls / environment
         Destroy(gameObject);
     }
 }

@@ -112,7 +112,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.85
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &160606256766547117
 Rigidbody:
@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8fbd78a3673d3e458737785bcdd1786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleBehavior
-  forwardMomentum: 15
-  upwardForce: 8
-  floatDelay: 0.8
-  lifetime: 3.5
+  lifeTime: 3
+  upwardForce: 4
+  floatDelay: 1.8
+  damage: 10
