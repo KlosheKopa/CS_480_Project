@@ -8,6 +8,13 @@ public class PlayerController : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 2f;
 
+    [Header("Audio")]
+    public AudioSource footstepSource;
+    public AudioSource sfxSource;
+    public AudioClip footstepClip;
+    public AudioClip jumpClip;
+    public AudioClip dashClip;
+
     [Header("Mouse Look")]
     public float mouseSensitivity = 100f;
 
@@ -53,6 +60,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isPaused = false;
     private Vector3 startPosition;
+
     private bool cameraInitialized = false;
     private bool hasAirDashed = false;
 
@@ -62,6 +70,13 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         playerHealth = GetComponent<PlayerHealth>();
         stats = GetComponent<PlayerStats>();
+
+        footstepSource = gameObject.AddComponent<AudioSource>();
+        sfxSource = gameObject.AddComponent<AudioSource>();
+
+        footstepSource.loop = true;
+        footstepSource.playOnAwake = false;
+
 
         moveAction = playerInput.actions["Move"];
         lookAction = playerInput.actions["Look"];
@@ -112,7 +127,6 @@ public class PlayerController : MonoBehaviour
         }
 
         isGrounded = controller.isGrounded;
-
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
@@ -152,6 +166,19 @@ public class PlayerController : MonoBehaviour
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
         controller.Move(move * walkSpeed * Time.deltaTime);
 
+        if (isGrounded && move.magnitude > 0.1f && dashTimeRemaining <= 0)
+        {
+            if (!footstepSource.isPlaying && footstepClip != null)
+            {
+                footstepSource.clip = footstepClip;
+                footstepSource.Play();
+            }
+        }
+        else
+        {
+            footstepSource.Stop();
+        }
+
         if (jumpAction.triggered)
         {
             if (isGrounded)
@@ -162,6 +189,11 @@ public class PlayerController : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 canDoubleJump = false;
+            }
+
+            if (sfxSource != null && jumpClip != null)
+            {
+                sfxSource.PlayOneShot(jumpClip);
             }
         }
 
@@ -209,6 +241,11 @@ public class PlayerController : MonoBehaviour
         Vector3 dashDirection = (moveInput.sqrMagnitude < 0.1f)
             ? -transform.forward
             : (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
+
+        if (sfxSource != null && dashClip != null)
+        {
+            sfxSource.PlayOneShot(dashClip);
+        }
 
         float finalDashSpeed = dashSpeed * (stats != null ? stats.dashDistanceMultiplier : 1f);
         currentDashVelocity = dashDirection * finalDashSpeed;

@@ -17,6 +17,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Health Bar Slider")]
     public Slider healthBar;
 
+    [Header("Shader References")]
+    public Image healthBarFillImage;
+
     [Header("Death UI")]
     public TextMeshProUGUI deathText;
     public Image fadeImage;
@@ -66,8 +69,20 @@ public class PlayerHealth : MonoBehaviour
 
     public void RefreshHealthBar()
     {
-        if (healthBar != null && stats != null)
-            healthBar.value = stats.CurrentHealth / stats.maxHealth;
+        if (stats != null)
+        {
+            float fillRatio = stats.CurrentHealth / stats.maxHealth;
+
+            // 1. Keep the standard slider logic if you're using it for positioning
+            if (healthBar != null) healthBar.value = fillRatio;
+
+            // 2. SEND VALUE TO SHADER
+            // Make sure "_FillAmount" matches the Reference name in your Shader Blackboard
+            if (healthBarFillImage != null && healthBarFillImage.material != null)
+            {
+                healthBarFillImage.material.SetFloat("_FillAmount", fillRatio);
+            }
+        }
     }
 
     void Die()
@@ -128,6 +143,12 @@ public class PlayerHealth : MonoBehaviour
             yield return null;
         }
 
-        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(1.0f);
+
+        // Trigger the Manager to show buttons and unlock mouse
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ShowGameOver();
+        }
     }
 }

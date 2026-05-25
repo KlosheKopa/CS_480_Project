@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class Jellyfish : MonoBehaviour
 {
@@ -10,26 +11,62 @@ public class Jellyfish : MonoBehaviour
     public float maxChaseRange = 20f;
     public float attackDamage = 10f;
     public float attackCooldown = 1.5f;
+    public int experience = 5;
+
+    [Header("Audio Clips")] // Added these slots
+    public AudioClip floatingSound;    // floating_sound.mp3
+    public AudioClip chaseSound;       // chase_sounds.mp3
+    public AudioClip attackSound;      // jelly_attack.mp3
+    public AudioClip hurtSound;        // jelly_hurt.mp3
+    public AudioClip deathSound;       // jelly_dead.mp3
+
+    [Header("Drops")]
+    public GameObject greenFishPrefab;
+    public int dropEveryXItems = 3;
 
     [Header("Height Limit")]
     public float maxHeight = 15f;
     public float returnToGroundY = 1.25f;
     public float highAndFarTimeRequired = 2f;
 
-    private Transform player;
+    private static int totalKills = 0;
+    public Transform player;
     private Rigidbody rb;
     private Collider col;
+    private AudioSource audioSource; // Added reference
     private float currentHealth;
+    public float CurrentHealth => currentHealth;
     private float lastAttackTime = 0f;
     public bool isDead = false;
-
+    public event Action OnDeath;
     private float highAndFarTimer = 0f;
+    private bool isChasing = false; // To track audio state
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        player = GameObject.FindWithTag("Player").transform;
+        audioSource = GetComponent<AudioSource>();
+
+        if (floatingSound != null)
+        {
+            audioSource.clip = floatingSound;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
+            else
+            {
+                Debug.LogError("Boss cannot find Player! Make sure your Player object has the 'Player' tag.");
+            }
+        }
         currentHealth = maxHealth;
         Debug.Log($"Jellyfish spawned with {currentHealth} HP");
     }
@@ -44,9 +81,15 @@ public class Jellyfish : MonoBehaviour
         {
             Vector3 direction = (player.position - transform.position).normalized;
             rb.linearVelocity = direction * moveSpeed;
+            if (!isChasing && chaseSound != null)
+            {
+                audioSource.PlayOneShot(chaseSound);
+                isChasing = true;
+            }
         }
         else
         {
+            isChasing = false;
             rb.linearVelocity = new Vector3(0, Mathf.Sin(Time.time) * 1f, 0);
         }
 
@@ -86,7 +129,9 @@ public class Jellyfish : MonoBehaviour
         float oldHealth = currentHealth;
         currentHealth -= damage;
 
-        Debug.Log($"[JELLYFISH DAMAGE] Took {damage} damage | Health: {oldHealth} → {currentHealth} | Frame: {Time.frameCount}");
+        if (hurtSound != null) audioSource.PlayOneShot(hurtSound);
+
+        Debug.Log($"[JELLYFISH DAMAGE] Took {damage} damage | Health: {oldHealth} ? {currentHealth} | Frame: {Time.frameCount}");
 
         if (currentHealth <= 0)
         {
@@ -99,11 +144,27 @@ public class Jellyfish : MonoBehaviour
     {
         isDead = true;
 
+        if (audioSource != null)
+        {
+            audioSource.Stop(); // Stop idle/chase sounds
+            if (deathSound != null) audioSource.PlayOneShot(deathSound);
+        }
+
+        totalKills++;
+        if (greenFishPrefab != null && totalKills % dropEveryXItems == 0)
+        {
+            // Spawns the fish at the current jellyfish position
+            Instantiate(greenFishPrefab, transform.position + Vector3.up, Quaternion.identity);
+            Debug.Log($"Kill {totalKills}: Green Fish dropped!");
+        }
+
+        OnDeath?.Invoke();
+
         // === NEW: Award 1 EXP to the player ===
         PlayerStats playerStats = GameObject.FindWithTag("Player").GetComponent<PlayerStats>();
         if (playerStats != null)
         {
-            playerStats.AddEXP(1);
+            playerStats.AddEXP(experience);
             Debug.Log("Jellyfish killed - Awarded 1 EXP to player");
         }
 
@@ -165,7 +226,11 @@ public class Jellyfish : MonoBehaviour
         if (playerY > jellyTopY)
         {
             if (playerHealth != null)
+            {
                 playerHealth.TakeDamage(attackDamage);
+                // --- Audio Integration ---
+                if (audioSource != null && attackSound != null) audioSource.PlayOneShot(attackSound);
+            }
 
             PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
             if (pc != null)
@@ -182,8 +247,20 @@ public class Jellyfish : MonoBehaviour
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(attackDamage);
+                if (audioSource != null && attackSound != null) audioSource.PlayOneShot(attackSound);
                 lastAttackTime = Time.time;
             }
+        }
+    }
+
+    void SpawnGreenFish()
+    {
+        if (greenFishPrefab != null)
+        {
+            // Spawn at the jellyfish's position with a slight lift
+            Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
+            Instantiate(greenFishPrefab, spawnPos, Quaternion.identity);
+            Debug.Log("Green Fish Dropped!");
         }
     }
 }

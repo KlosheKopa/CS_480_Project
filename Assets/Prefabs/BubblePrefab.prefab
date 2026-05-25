@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a146b645b8c7bed43a3afae2f3a2143b, type: 2}
+  - {fileID: 2100000, guid: e59d5fd093cc2f948a60c2f180443fd7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -153,7 +153,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8fbd78a3673d3e458737785bcdd1786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleBehavior
-  forwardMomentum: 15
-  upwardForce: 8
-  floatDelay: 0.8
-  lifetime: 3.5
+  lifeTime: 3
+  upwardForce: 3
+  floatDelay: 1
+  damage: 10
+  bubblePopClip: {fileID: 8300000, guid: 36a65a92f6efe48f88d2827fe81e4be9, type: 3}
+  bubblePopVolume: 0.969
