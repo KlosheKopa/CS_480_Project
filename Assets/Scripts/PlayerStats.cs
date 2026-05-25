@@ -17,7 +17,7 @@ public class PlayerStats : MonoBehaviour
 
     [Header("New Upgrades")]
     public float defense = 0f;
-    public float invincibilityTime = 1f;
+    public float invincibilityTime = 0.5f;
 
     [Header("Dash")]
     public float dashDistanceMultiplier = 1f;
@@ -77,7 +77,7 @@ public class PlayerStats : MonoBehaviour
         bubbleSpeed = 10f + bubbleSpeedUpgrades * 4f;
 
         defense = defenseUpgrades * 0.04f;
-        invincibilityTime = 1f + invincibilityUpgrades * 0.2f;
+        invincibilityTime = 0.5f + invincibilityUpgrades * 0.2f;
         healPercentage = 0.25f + healUpgrades * 0.03f;
     }
 
