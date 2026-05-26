@@ -115,7 +115,7 @@ public class LevelUpManager : MonoBehaviour
             case "BubbleFireRate": return "Fire Rate (Lv. " + stats.bubbleFireRateUpgrades + "/5)\nCurrent: " + (0.8f - stats.bubbleFireRateUpgrades * 0.15f).ToString("F2") + "s\nUpgrade: -0.15s";
             case "BubbleSpeed": return "Bubble Speed (Lv. " + stats.bubbleSpeedUpgrades + "/5)\nCurrent: +" + (10 + stats.bubbleSpeedUpgrades * 4) + "\nUpgrade: +4";
             case "Defense": return "Damage Reduction (Lv. " + stats.defenseUpgrades + "/5)\nCurrent: +" + (stats.defenseUpgrades * 4) + "%\nUpgrade: +4%";
-            case "InvincibilityTime": return "Invincibility (Lv. " + stats.invincibilityUpgrades + "/5)\nCurrent: +" + (1f + stats.invincibilityUpgrades * 0.2f) + "s\nUpgrade: +0.2s";
+            case "InvincibilityTime": return "Invincibility (Lv. " + stats.invincibilityUpgrades + "/5)\nCurrent: +" + (0.5f + stats.invincibilityUpgrades * 0.2f) + "s\nUpgrade: +0.2s";
             case "HealPercentage": return "Green Fish Healing (Lv. " + stats.healUpgrades + "/5)\nCurrent: +" + (stats.healPercentage * 100f).ToString("F0") + "%\nUpgrade: +3%";
             default: return key;
         }
