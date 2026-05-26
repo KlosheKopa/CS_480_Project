@@ -31,8 +31,12 @@ public class PlayerController : MonoBehaviour
     [Header("Stats Screen")]
     public ShowPlayerStatsUI statsUI;
 
+    [Header("Double Jump")]
+    public bool hasDoubleJump = false;
+    private bool canDoubleJump = false;
+
     private CharacterController controller;
-    private Vector3 velocity;
+    [HideInInspector] public Vector3 velocity;
     private bool isGrounded;
 
     public Transform playerCamera;
@@ -58,6 +62,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 startPosition;
 
     private bool cameraInitialized = false;
+    private bool hasAirDashed = false;
 
     void Awake()
     {
@@ -105,6 +110,15 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (playerHealth != null && playerHealth.isDead) return;
+
+        // Skip normal movement while wall climbing, but keep mouse look
+        WallClimb wallClimb = GetComponent<WallClimb>();
+        if (wallClimb != null && wallClimb.isClimbing)
+        {
+            goto MouseLookOnly;
+        }
+
         if (transform.position.y <= -10f)
         {
             transform.position = startPosition;
@@ -114,7 +128,11 @@ public class PlayerController : MonoBehaviour
 
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
+        {
             velocity.y = -2f;
+            canDoubleJump = true;
+            hasAirDashed = false;
+        }
 
         if (pauseAction.WasPressedThisFrame())
         {
@@ -132,10 +150,9 @@ public class PlayerController : MonoBehaviour
 
         if (giveEXPAction.WasPressedThisFrame())
         {
-            if (stats != null) stats.AddEXP(100); //Pressing 0 Key, gives 100 EXP.
+            if (stats != null) stats.AddEXP(100);
         }
 
-        // TAB = Show Stats
         if (showStatsAction.IsPressed())
         {
             if (statsUI != null) statsUI.ShowStatsPanel();
@@ -162,9 +179,17 @@ public class PlayerController : MonoBehaviour
             footstepSource.Stop();
         }
 
-        if (jumpAction.triggered && isGrounded)
+        if (jumpAction.triggered)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            if (isGrounded)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
+            else if (hasDoubleJump && canDoubleJump)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                canDoubleJump = false;
+            }
 
             if (sfxSource != null && jumpClip != null)
             {
@@ -189,6 +214,9 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
 
+    MouseLookOnly:
+
+        // Mouse Look (always runs, even while climbing)
         Vector2 lookInput = lookAction.ReadValue<Vector2>();
         float mouseX = lookInput.x * mouseSensitivity * Time.deltaTime;
         float mouseY = lookInput.y * mouseSensitivity * Time.deltaTime;
@@ -204,8 +232,15 @@ public class PlayerController : MonoBehaviour
 
     public void PerformDash()
     {
+        if (!isGrounded && hasAirDashed) return;
+
+        if (!isGrounded)
+            hasAirDashed = true;
+
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
-        Vector3 dashDirection = (moveInput.sqrMagnitude < 0.1f) ? -transform.forward : (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
+        Vector3 dashDirection = (moveInput.sqrMagnitude < 0.1f)
+            ? -transform.forward
+            : (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
 
         if (sfxSource != null && dashClip != null)
         {
@@ -222,5 +257,10 @@ public class PlayerController : MonoBehaviour
         currentBounceVelocity = bounceVelocity;
         currentBounceVelocity.y = 4f;
         bounceTimeRemaining = bounceDuration;
+    }
+
+    public void UnlockDoubleJump()
+    {
+        hasDoubleJump = true;
     }
 }
