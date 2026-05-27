@@ -11,6 +11,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Alpha.unity
     guid: b9921e1c0b8b7b7468afbb7f03bb83d5
+  - enabled: 1
+    path: Assets/Scenes/Scene Selector.unity
+    guid: a7594f34f8bf3d94b9ff6bdf8a02d30f
+  - enabled: 1
+    path: Assets/Scenes/Western.unity
+    guid: 0c93a65c5705a264093e703b179384e5
+  - enabled: 1
+    path: Assets/Scenes/Castle-Map.unity
+    guid: 22e44359ef6fe00408ba87053ff55b9f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
