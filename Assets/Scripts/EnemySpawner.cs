@@ -7,25 +7,22 @@ public class UltimateEnemySpawner : MonoBehaviour
     [Header("References")]
     public GameObject enemyPrefab;
     public Terrain targetTerrain;
-    public GameObject controlHintUI;
 
     [Header("Spawn Settings")]
     public int maxEnemies = 10;
     public float spawnDelay = 2.5f;
-    public float initialStartDelay = 10f;
     public float edgeBuffer = 10f;
     public float heightOffset = 0.2f;
 
-    [Header("Player Spawning")]
-    public Transform playerTransform; // Drag player here or find via Tag
-    public float minSpawnDist = 15f;  // Minimum distance from player
-    public float maxSpawnDist = 30f;  // Maximum distance from player
+    [Header("Spawner Radius Settings")]
+    public Transform playerTransform; // Needed to check distance to player
+    public float maxSpawnRadius = 25f; // Flat radius around THIS spawner object
+    public float playerActivationDistance = 40f; // How close player must be to turn on spawner
 
     [Header("NavMesh Validation")]
     public float navMeshSearchRadius = 5f;
 
     private int currentEnemyCount = 0;
-    private bool canSpawn = false;
 
     void Start()
     {
@@ -37,69 +34,57 @@ public class UltimateEnemySpawner : MonoBehaviour
 
     IEnumerator CombinedSpawnRoutine()
     {
-        // 1. Show the UI
-        if (controlHintUI != null) controlHintUI.SetActive(true);
-
-        float timer = 0f;
-        bool skipWait = false;
-
-        // 2. Wait for 10 seconds OR until 'P' is pressed
-        while (timer < 10f)
-        {
-            timer += Time.unscaledDeltaTime;
-
-            // Check for 'P' key press using the New Input System
-            if (UnityEngine.InputSystem.Keyboard.current.pKey.wasPressedThisFrame)
-            {
-                skipWait = true;
-                break;
-            }
-
-            yield return null;
-        }
-
-        // 3. Hide UI and start the infinite spawning loop
-        if (controlHintUI != null) controlHintUI.SetActive(false);
-        Debug.Log(skipWait ? "Started early via P key" : "Started after 10s timer");
-
+        // Main continuous spawner loop (starts spawning immediately)
         while (true)
         {
-            if (currentEnemyCount < maxEnemies)
+            // Only spawn if player is close enough AND we are under the limit
+            if (playerTransform != null && Vector3.Distance(transform.position, playerTransform.position) <= playerActivationDistance)
             {
-                SpawnEnemyNearPlayer();
+                if (currentEnemyCount < maxEnemies)
+                {
+                    SpawnEnemy();
+                }
             }
             yield return new WaitForSeconds(spawnDelay);
         }
     }
 
-    void SpawnEnemyNearPlayer()
+    private void SpawnEnemy()
     {
-        if (playerTransform == null) return;
+        if (enemyPrefab == null || targetTerrain == null) return;
 
-        // 1. Generate a random circle direction
-        Vector2 randomCircle = UnityEngine.Random.insideUnitCircle.normalized;
+        // Get terrain dimensions
+        Vector3 terrainPos = targetTerrain.transform.position;
+        Vector3 terrainSize = targetTerrain.terrainData.size;
 
-        // 2. Pick a distance between min and max
-        float randomDist = UnityEngine.Random.Range(minSpawnDist, maxSpawnDist);
+        // Calculate a random point within the spawner's maximum radius
+        Vector2 randomCircle = Random.insideUnitCircle * maxSpawnRadius;
+        float targetX = transform.position.x + randomCircle.x;
+        float targetZ = transform.position.z + randomCircle.y;
 
-        // 3. Create a candidate X and Z around the player
-        float spawnX = playerTransform.position.x + (randomCircle.x * randomDist);
-        float spawnZ = playerTransform.position.z + (randomCircle.y * randomDist);
+        // Clamp inside terrain bounds with edge buffer
+        targetX = Mathf.Clamp(targetX, terrainPos.x + edgeBuffer, terrainPos.x + terrainSize.x - edgeBuffer);
+        targetZ = Mathf.Clamp(targetZ, terrainPos.z + edgeBuffer, terrainPos.z + terrainSize.z - edgeBuffer);
 
-        // 4. Find the ground height at that spot
-        float yVal = targetTerrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + targetTerrain.transform.position.y;
-        Vector3 candidatePos = new Vector3(spawnX, yVal, spawnZ);
+        // Sample terrain height
+        float targetY = targetTerrain.SampleHeight(new Vector3(targetX, 0f, targetZ)) + terrainPos.y + heightOffset;
+        Vector3 spawnPosition = new Vector3(targetX, targetY, targetZ);
 
-        // 5. Final NavMesh Validation
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(candidatePos, out hit, navMeshSearchRadius, NavMesh.AllAreas))
+        // Validate on NavMesh
+        if (NavMesh.SamplePosition(spawnPosition, out NavMeshHit hit, navMeshSearchRadius, NavMesh.AllAreas))
         {
-            Vector3 finalPos = hit.position + Vector3.up * heightOffset;
-            GameObject enemy = Instantiate(enemyPrefab, finalPos, Quaternion.identity);
+            GameObject spawnedEnemy = Instantiate(enemyPrefab, hit.position, Quaternion.identity);
             currentEnemyCount++;
-
-            Jellyfish jelly = enemy.GetComponent<Jellyfish>();
-            if (jelly != null) jelly.OnDeath += () => currentEnemyCount--;
         }
+    }
+
+    // Draw a visual wire circle in the Scene View to easily adjust sizes
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, maxSpawnRadius);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, playerActivationDistance);
     }
 }

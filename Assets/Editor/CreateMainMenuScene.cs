@@ -52,7 +52,12 @@ public static class CreateMainMenuScene
         backgroundImage.preserveAspect = false;
         backgroundImage.raycastTarget = false;
 
-        GameObject buttonObject = new GameObject("StartGameButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(MainMenuStartButton));
+        // FIX: Add the MenuController script to the scene
+        GameObject menuManagerObject = new GameObject("Selector (MenuManager)", typeof(MenuController));
+        MenuController menuController = menuManagerObject.GetComponent<MenuController>();
+
+        // Create the button object
+        GameObject buttonObject = new GameObject("StartGameButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(canvasObject.transform, false);
         RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
         buttonRect.anchorMin = new Vector2(0.5f, 0f);
@@ -81,8 +86,7 @@ public static class CreateMainMenuScene
         colors.fadeDuration = 0.08f;
         button.colors = colors;
 
-        MainMenuStartButton startButton = buttonObject.GetComponent<MainMenuStartButton>();
-        UnityEventTools.AddPersistentListener(button.onClick, startButton.StartGame);
+        UnityEventTools.AddIntPersistentListener(button.onClick, menuController.LoadScene, 2);
 
         GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         eventSystemObject.transform.SetParent(null);
