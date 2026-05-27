@@ -115,3 +115,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BlackSeaUrchin
   damage: 3
   damageInterval: 0.1
+  hitPlayerSound: {fileID: 8300000, guid: 6a458074962a74af38fc3d9045fa22cf, type: 3}
+  bubbleHitSound: {fileID: 8300000, guid: c6032c50bdca8464db743cbee583b159, type: 3}
+  soundVolume: 1

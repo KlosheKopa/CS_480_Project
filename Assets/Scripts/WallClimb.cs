@@ -15,6 +15,10 @@ public class WallClimb : MonoBehaviour
     [Header("State")]
     [HideInInspector] public bool isClimbing = false;
 
+    [Header("Audio")]
+    public AudioClip wallClimbClip;
+    [Range(0f, 1f)] public float wallClimbVolume = 1f;
+
     private CharacterController controller;
     private PlayerController playerController;
     private PlayerInput playerInput;
@@ -22,6 +26,7 @@ public class WallClimb : MonoBehaviour
     private InputAction jumpAction;
 
     private float lastWallContactTime;
+    private AudioSource wallClimbSource;
 
     void Start()
     {
@@ -34,6 +39,16 @@ public class WallClimb : MonoBehaviour
             moveAction = playerInput.actions["Move"];
             jumpAction = playerInput.actions["Jump"];
         }
+
+        wallClimbSource = gameObject.AddComponent<AudioSource>();
+        wallClimbSource.playOnAwake = false;
+        wallClimbSource.loop = true;
+        wallClimbSource.spatialBlend = 0f;
+    }
+
+    private void OnDisable()
+    {
+        StopWallClimbSound();
     }
 
     void Update()
@@ -82,6 +97,15 @@ public class WallClimb : MonoBehaviour
         Vector3 move = (transform.right * moveInput.x + Vector3.up * moveInput.y) * climbSpeed;
         controller.Move(move * Time.deltaTime);
 
+        if (moveInput.sqrMagnitude > 0.01f)
+        {
+            PlayWallClimbSound();
+        }
+        else
+        {
+            StopWallClimbSound();
+        }
+
         // Space = jump off
         if (jumpAction != null && jumpAction.WasPressedThisFrame())
         {
@@ -100,7 +124,26 @@ public class WallClimb : MonoBehaviour
     private void StopClimbing()
     {
         isClimbing = false;
+        StopWallClimbSound();
 
         // Do NOT re-enable PlayerController here
+    }
+
+    private void PlayWallClimbSound()
+    {
+        if (wallClimbClip == null || wallClimbSource == null) return;
+        if (wallClimbSource.isPlaying) return;
+
+        wallClimbSource.clip = wallClimbClip;
+        wallClimbSource.volume = wallClimbVolume;
+        wallClimbSource.Play();
+    }
+
+    private void StopWallClimbSound()
+    {
+        if (wallClimbSource != null)
+        {
+            wallClimbSource.Stop();
+        }
     }
 }
