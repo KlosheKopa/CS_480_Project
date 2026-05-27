@@ -433,6 +433,11 @@ MonoBehaviour:
   siphon: {fileID: 1322920988138592811}
   shootPoint: {fileID: 5367299523127859356}
   forwardReference: {fileID: 7355432979748779829}
+  detectedSound: {fileID: 8300000, guid: 03019e519c5e94a78b48400e3e419c93, type: 3}
+  shootSound: {fileID: 8300000, guid: 1d0cc3f1318874b0bb1e8e53d3c91efb, type: 3}
+  rotateSound: {fileID: 8300000, guid: 25e823f0eb6534a83a0b76b5c348b2c6, type: 3}
+  deathSound: {fileID: 8300000, guid: 5bcc3c8815c154572800c92fea4b6150, type: 3}
+  soundVolume: 1
   isDead: 0
 --- !u!54 &2779019552669546001
 Rigidbody:

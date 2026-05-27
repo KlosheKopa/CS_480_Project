@@ -9,7 +9,7 @@ public class CrabMonsterEnemy : MonoBehaviour
     public int expOnDeath = 25;
 
     [Header("Movement")]
-    public float detectionRange = 25f;
+    public float detectionRange = 10f;
     public float attackRange = 2.4f;
     public float moveSpeed = 3.2f;
     public float turnSpeed = 8f;
@@ -32,6 +32,14 @@ public class CrabMonsterEnemy : MonoBehaviour
     public float intimidateDuration = 1.6f;
     public float takeDamageAnimationCooldown = 0.25f;
 
+    [Header("Audio")]
+    public AudioClip intimidateSound;
+    public AudioClip walkSound;
+    public AudioClip attackSound;
+    public AudioClip hurtSound;
+    public AudioClip deathSound;
+    [Range(0f, 1f)] public float soundVolume = 1f;
+
     public event Action OnDeath;
 
     [HideInInspector] public bool isDead = false;
@@ -39,6 +47,7 @@ public class CrabMonsterEnemy : MonoBehaviour
     private Animator animator;
     private CapsuleCollider hitCollider;
     private Rigidbody rb;
+    private AudioSource audioSource;
     private Transform player;
     private float currentHealth;
     private float lastDamageTime;
@@ -62,6 +71,11 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.useGravity = false;
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f;
     }
 
     private void Start()
@@ -86,6 +100,7 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (distance > detectionRange)
         {
             hasIntimidatedThisChase = false;
+            StopWalkSound();
             PlayLoop(idleTrigger);
             return;
         }
@@ -104,9 +119,11 @@ public class CrabMonsterEnemy : MonoBehaviour
         {
             MoveTowardPlayer();
             PlayLoop(walkTrigger);
+            StartWalkSound();
         }
         else
         {
+            StopWalkSound();
             TryDamagePlayer(player.gameObject);
         }
     }
@@ -133,6 +150,7 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (Time.time >= lastTakeAnimationTime + takeDamageAnimationCooldown)
         {
             PlayTrigger(RandomTakeDamageTrigger());
+            PlaySound(hurtSound);
             lastTakeAnimationTime = Time.time;
         }
     }
@@ -191,6 +209,7 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (playerHealth == null || playerHealth.isDead) return;
 
         PlayTrigger(RandomAttackTrigger());
+        PlaySound(attackSound);
         playerHealth.TakeDamage(touchDamage);
         lastDamageTime = Time.time;
     }
@@ -203,7 +222,9 @@ public class CrabMonsterEnemy : MonoBehaviour
         isIntimidating = true;
         currentLoopTrigger = null;
 
+        StopWalkSound();
         PlayTrigger(RandomIntimidateTrigger());
+        PlaySound(intimidateSound);
 
         yield return new WaitForSeconds(intimidateDuration);
         isIntimidating = false;
@@ -214,6 +235,7 @@ public class CrabMonsterEnemy : MonoBehaviour
         isDead = true;
         OnDeath?.Invoke();
 
+        StopWalkSound();
         if (hitCollider != null) hitCollider.enabled = false;
 
         PlayerStats stats = FindFirstObjectByType<PlayerStats>();
@@ -223,6 +245,7 @@ public class CrabMonsterEnemy : MonoBehaviour
         }
 
         PlayTrigger(deathTrigger);
+        PlaySound(deathSound);
 
         yield return new WaitForSeconds(3f);
         Destroy(gameObject);
@@ -241,6 +264,32 @@ public class CrabMonsterEnemy : MonoBehaviour
         animator.SetTrigger(triggerName);
     }
 
+    private void StartWalkSound()
+    {
+        if (audioSource == null || walkSound == null) return;
+        if (audioSource.isPlaying && audioSource.clip == walkSound) return;
+
+        audioSource.clip = walkSound;
+        audioSource.loop = true;
+        audioSource.volume = soundVolume;
+        audioSource.Play();
+    }
+
+    private void StopWalkSound()
+    {
+        if (audioSource == null || audioSource.clip != walkSound) return;
+
+        audioSource.Stop();
+        audioSource.clip = null;
+        audioSource.loop = false;
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource == null || clip == null) return;
+        audioSource.PlayOneShot(clip, soundVolume);
+    }
+
     private string RandomAttackTrigger()
     {
         return $"Attack_{UnityEngine.Random.Range(1, 6)}";
@@ -254,5 +303,14 @@ public class CrabMonsterEnemy : MonoBehaviour
     private string RandomTakeDamageTrigger()
     {
         return $"Take_Damage_{UnityEngine.Random.Range(1, 4)}";
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

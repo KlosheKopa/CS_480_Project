@@ -28,6 +28,14 @@ public class Starfish : MonoBehaviour
     public float despawnDelay = 8f;
     public int expOnDeath = 3;
 
+    [Header("Audio")]
+    public AudioClip spinSound;
+    public AudioClip spinContinueSound;
+    public AudioClip hitPlayerSound;
+    public AudioClip hurtSound;
+    [Range(0f, 1f)] public float soundVolume = 1f;
+    public float hitPlayerSoundCooldown = 2f;
+
     private Transform player;
     private StarfishState currentState = StarfishState.Flat;
     private bool isDead = false;
@@ -39,12 +47,17 @@ public class Starfish : MonoBehaviour
 
     private Vector3 phase2Position;
     private Vector3 lockedChargeDirection;
+    private AudioSource audioSource;
+    private AudioSource spinIntroSource;
+    private AudioSource spinContinueSource;
+    private float lastHitPlayerSoundTime = -Mathf.Infinity;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
         currentState = StarfishState.Flat;
+        SetupAudioSources();
 
         FindGroundImmediately();
         initialGroundY = groundY;
@@ -99,6 +112,7 @@ public class Starfish : MonoBehaviour
 
     private IEnumerator FallToFlat()
     {
+        StopSpinSound();
         isFalling = true;
         FindGroundImmediately();
 
@@ -194,6 +208,7 @@ public class Starfish : MonoBehaviour
             lockedChargeDirection = Vector3.ProjectOnPlane(player.position - transform.position, Vector3.up).normalized;
 
             float actualWindUp = windUpTime > 0.1f ? windUpTime : 2.5f;
+            StartSpinSound();
             elapsed = 0f;
             while (elapsed < actualWindUp)
             {
@@ -237,6 +252,8 @@ public class Starfish : MonoBehaviour
                 transform.Rotate(-1600f * Time.deltaTime, 0f, 0f);
                 yield return null;
             }
+
+            StopSpinSound();
         }
     }
 
@@ -249,6 +266,7 @@ public class Starfish : MonoBehaviour
             if (ph != null)
             {
                 ph.TakeDamage(damageToPlayer);
+                PlayHitPlayerSound();
             }
         }
     }
@@ -258,11 +276,13 @@ public class Starfish : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damage;
+        PlaySound(hurtSound);
         Debug.Log($"⭐ Starfish took {damage} damage. HP left: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
         {
             isDead = true;
+            StopSpinSound();
 
             PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
             if (playerStats != null)
@@ -316,5 +336,69 @@ public class Starfish : MonoBehaviour
 
         yield return new WaitForSeconds(despawnDelay - deathFallTime);
         Destroy(gameObject);
+    }
+
+    private void SetupAudioSources()
+    {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f;
+
+        spinIntroSource = gameObject.AddComponent<AudioSource>();
+        spinIntroSource.playOnAwake = false;
+        spinIntroSource.spatialBlend = 1f;
+
+        spinContinueSource = gameObject.AddComponent<AudioSource>();
+        spinContinueSource.playOnAwake = false;
+        spinContinueSource.spatialBlend = 1f;
+        spinContinueSource.loop = true;
+    }
+
+    private void StartSpinSound()
+    {
+        StopSpinSound();
+
+        if (spinSound == null && spinContinueSound == null) return;
+
+        double startTime = AudioSettings.dspTime;
+
+        if (spinSound != null)
+        {
+            spinIntroSource.clip = spinSound;
+            spinIntroSource.volume = soundVolume;
+            spinIntroSource.loop = false;
+            spinIntroSource.PlayScheduled(startTime);
+        }
+
+        if (spinContinueSound != null)
+        {
+            double continueStartTime = spinSound != null ? startTime + spinSound.length : startTime;
+
+            spinContinueSource.clip = spinContinueSound;
+            spinContinueSource.volume = soundVolume;
+            spinContinueSource.loop = true;
+            spinContinueSource.PlayScheduled(continueStartTime);
+        }
+    }
+
+    private void StopSpinSound()
+    {
+        if (spinIntroSource != null) spinIntroSource.Stop();
+        if (spinContinueSource != null) spinContinueSource.Stop();
+    }
+
+    private void PlayHitPlayerSound()
+    {
+        if (Time.time < lastHitPlayerSoundTime + hitPlayerSoundCooldown) return;
+
+        lastHitPlayerSoundTime = Time.time;
+        PlaySound(hitPlayerSound);
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip == null || audioSource == null) return;
+
+        audioSource.PlayOneShot(clip, soundVolume);
     }
 }

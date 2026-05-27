@@ -80,10 +80,17 @@ public class BubbleBehavior : MonoBehaviour
             if (star != null)
                 star.TakeDamage(damage);
 
-            if (bubblePopClip != null)
-            {
-                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
-            }
+            Destroy(gameObject);
+            return;
+        }
+
+        // === URCHIN ===
+        else if (other.GetComponent<BlackSeaUrchin>() != null || other.GetComponentInParent<BlackSeaUrchin>() != null)
+        {
+            BlackSeaUrchin urchin = other.GetComponentInParent<BlackSeaUrchin>();
+            if (urchin != null)
+                urchin.PlayBubbleHitSound();
+
             Destroy(gameObject);
             return;
         }
@@ -99,6 +106,17 @@ public class BubbleBehavior : MonoBehaviour
             {
                 AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
             }
+            Destroy(gameObject);
+            return;
+        }
+
+        // === CRAB MONSTER ===
+        else if (other.GetComponent<CrabMonsterEnemy>() != null || other.GetComponentInParent<CrabMonsterEnemy>() != null)
+        {
+            CrabMonsterEnemy crab = other.GetComponentInParent<CrabMonsterEnemy>();
+            if (crab != null)
+                crab.TakeDamage(damage);
+
             Destroy(gameObject);
             return;
         }

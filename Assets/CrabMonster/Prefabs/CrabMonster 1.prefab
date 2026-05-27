@@ -4105,6 +4105,12 @@ MonoBehaviour:
   deathTrigger: Die
   intimidateDuration: 1.6
   takeDamageAnimationCooldown: 0.25
+  intimidateSound: {fileID: 8300000, guid: 332a548b3b7334c9bac5d4dba7bd1e3a, type: 3}
+  walkSound: {fileID: 8300000, guid: 07e28ecd53bd542e4b2e923c6208bf45, type: 3}
+  attackSound: {fileID: 8300000, guid: 52e1101b7c9064e96af7606c10bf912b, type: 3}
+  hurtSound: {fileID: 8300000, guid: 22b29faf067994e3ca2cc98a9f5baed2, type: 3}
+  deathSound: {fileID: 8300000, guid: 7fc68b398b5d34e5d94a6b167a345a02, type: 3}
+  soundVolume: 1
   isDead: 0
 --- !u!1 &5792748071347383548
 GameObject:
