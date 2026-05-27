@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5450928765009156169}
   - component: {fileID: 1106211469897959969}
   m_Layer: 0
-  m_Name: JellyFishSpawner
+  m_Name: SquidSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,8 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6489742ec96687344a2ab47062f660d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UltimateEnemySpawner
-  enemyPrefab: {fileID: 506159905970590620, guid: 59cd44f6cd8133441b44792dded160f4, type: 3}
-  maxEnemies: 5
-  spawnDelay: 3
+  enemyPrefab: {fileID: 5493742416767469199, guid: 273770e8f725a564da824678e97047d9, type: 3}
+  targetTerrain: {fileID: 0}
+  maxEnemies: 2
+  spawnDelay: 2
+  edgeBuffer: 10
+  heightOffset: 1
+  playerTransform: {fileID: 1106490759393968609, guid: 14703fe93f739c94f9038c7f6cca05c6, type: 3}
   maxSpawnRadius: 10
   playerActivationDistance: 35
+  navMeshSearchRadius: 20

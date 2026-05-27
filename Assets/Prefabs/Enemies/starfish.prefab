@@ -158,7 +158,7 @@ MonoBehaviour:
   facePlayerTime: 1.5
   windUpTime: 1.5
   chargeDistance: 33.6
-  chargeDuration: 7
+  chargeDuration: 3
   groundOffset: 1.5
   maxHealth: 20
   damageToPlayer: 15

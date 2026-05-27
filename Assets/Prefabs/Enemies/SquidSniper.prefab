@@ -421,12 +421,12 @@ MonoBehaviour:
   prepareTime: 1.5
   cooldownTime: 2
   searchDuration: 5
-  timeBetweenBullets: 0.8
+  timeBetweenBullets: 1.5
   inkProjectilePrefab: {fileID: 3881831758502397548, guid: ea5178be87772a347b4983d30bc76f1d, type: 3}
   projectileSpeed: 18
   minBullets: 5
   maxBullets: 6
-  postShotHoldTime: 1.5
+  postShotHoldTime: 2
   bodyTurnSpeed: 150
   flipDuration: 1
   returnDuration: 0.5

@@ -150,5 +150,8 @@ public class PlayerHealth : MonoBehaviour
         {
             GameManager.Instance.ShowGameOver();
         }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
