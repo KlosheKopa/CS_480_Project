@@ -144,6 +144,9 @@ public class PlayerController : MonoBehaviour
             isPaused = !isPaused;
             Time.timeScale = isPaused ? 0f : 1f;
             if (pausePanel != null) pausePanel.SetActive(isPaused);
+
+            Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isPaused;
         }
 
         if (isPaused) return;
@@ -184,16 +187,19 @@ public class PlayerController : MonoBehaviour
             if (isGrounded)
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                if (sfxSource != null && jumpClip != null)
+                {
+                    sfxSource.PlayOneShot(jumpClip);
+                }
             }
             else if (hasDoubleJump && canDoubleJump)
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 canDoubleJump = false;
-            }
-
-            if (sfxSource != null && jumpClip != null)
-            {
-                sfxSource.PlayOneShot(jumpClip);
+                if (sfxSource != null && jumpClip != null)
+                {
+                    sfxSource.PlayOneShot(jumpClip);
+                }
             }
         }
 
@@ -218,8 +224,12 @@ public class PlayerController : MonoBehaviour
 
         // Mouse Look (always runs, even while climbing)
         Vector2 lookInput = lookAction.ReadValue<Vector2>();
-        float mouseX = lookInput.x * mouseSensitivity * Time.deltaTime;
-        float mouseY = lookInput.y * mouseSensitivity * Time.deltaTime;
+        // Get the multiplier from your pause menu slider (defaults to 1)
+        float sensitivityMultiplier = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
+
+        // Multiply by the slider setting to change your speed dynamically
+        float mouseX = lookInput.x * mouseSensitivity * sensitivityMultiplier * Time.deltaTime;
+        float mouseY = lookInput.y * mouseSensitivity * sensitivityMultiplier * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
