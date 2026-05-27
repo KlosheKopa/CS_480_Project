@@ -2152,18 +2152,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
-      propertyPath: spawnDelay
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
-      propertyPath: targetTerrain
-      value: 
-      objectReference: {fileID: 509283017}
-    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
-      propertyPath: playerTransform
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 5450928765009156169, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 57.4

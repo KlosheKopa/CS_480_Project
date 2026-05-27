@@ -45,12 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UltimateEnemySpawner
   enemyPrefab: {fileID: 506159905970590620, guid: 59cd44f6cd8133441b44792dded160f4, type: 3}
-  targetTerrain: {fileID: 0}
-  maxEnemies: 10
+  maxEnemies: 5
   spawnDelay: 3
-  edgeBuffer: 10
-  heightOffset: 1
-  playerTransform: {fileID: 1106490759393968609, guid: 14703fe93f739c94f9038c7f6cca05c6, type: 3}
   maxSpawnRadius: 10
   playerActivationDistance: 35
-  navMeshSearchRadius: 20

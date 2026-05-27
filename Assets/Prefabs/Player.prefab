@@ -1286,6 +1286,7 @@ GameObject:
   - component: {fileID: 3880057067122717423}
   - component: {fileID: 6212352910399228909}
   - component: {fileID: 5460515283684996773}
+  - component: {fileID: -143426143757701958}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1500,6 +1501,26 @@ MonoBehaviour:
   defenseUpgrades: 0
   invincibilityUpgrades: 0
   healUpgrades: 0
+--- !u!114 &-143426143757701958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5281397475502242319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede5569b07efee1478ee52a51ec775f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallClimb
+  climbSpeed: 5
+  climbableTag: Climbable
+  wallCheckDistance: 0.6
+  climbOffGraceTime: 0.5
+  hasAbility: 0
+  isClimbing: 0
+  wallClimbClip: {fileID: 8300000, guid: 2ed9c4f18e91f436fad2de8381304463, type: 3}
+  wallClimbVolume: 1
 --- !u!1 &5568687441649906527
 GameObject:
   m_ObjectHideFlags: 0
