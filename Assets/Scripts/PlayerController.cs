@@ -1,0 +1,276 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerController : MonoBehaviour
+{
+    [Header("Movement")]
+    public float walkSpeed = 6f;
+    public float gravity = -9.81f;
+    public float jumpHeight = 2f;
+
+    [Header("Audio")]
+    public AudioSource footstepSource;
+    public AudioSource sfxSource;
+    public AudioClip footstepClip;
+    public AudioClip jumpClip;
+    public AudioClip dashClip;
+
+    [Header("Mouse Look")]
+    public float mouseSensitivity = 100f;
+
+    [Header("Dash")]
+    public float dashSpeed = 84f;
+    public float dashDuration = 0.35f;
+
+    [Header("Bounce")]
+    public float bounceDuration = 0.25f;
+
+    [Header("Pause Menu")]
+    public GameObject pausePanel;
+
+    [Header("Stats Screen")]
+    public ShowPlayerStatsUI statsUI;
+
+    [Header("Double Jump")]
+    public bool hasDoubleJump = false;
+    private bool canDoubleJump = false;
+
+    private CharacterController controller;
+    [HideInInspector] public Vector3 velocity;
+    private bool isGrounded;
+
+    public Transform playerCamera;
+
+    private PlayerInput playerInput;
+    private InputAction moveAction;
+    private InputAction lookAction;
+    private InputAction jumpAction;
+    private InputAction pauseAction;
+    private InputAction giveEXPAction;
+    private InputAction showStatsAction;
+
+    private PlayerHealth playerHealth;
+    private PlayerStats stats;
+
+    private float xRotation = 0f;
+    private float dashTimeRemaining = 0f;
+    private Vector3 currentDashVelocity;
+    private float bounceTimeRemaining = 0f;
+    private Vector3 currentBounceVelocity;
+
+    private bool isPaused = false;
+    private Vector3 startPosition;
+
+    private bool cameraInitialized = false;
+    private bool hasAirDashed = false;
+
+    void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+        playerInput = GetComponent<PlayerInput>();
+        playerHealth = GetComponent<PlayerHealth>();
+        stats = GetComponent<PlayerStats>();
+
+        footstepSource = gameObject.AddComponent<AudioSource>();
+        sfxSource = gameObject.AddComponent<AudioSource>();
+
+        footstepSource.loop = true;
+        footstepSource.playOnAwake = false;
+
+
+        moveAction = playerInput.actions["Move"];
+        lookAction = playerInput.actions["Look"];
+        jumpAction = playerInput.actions["Jump"];
+        pauseAction = playerInput.actions["Pause"];
+        giveEXPAction = playerInput.actions["GiveEXP"];
+        showStatsAction = playerInput.actions["ShowStats"];
+    }
+
+    void OnEnable() => showStatsAction.Enable();
+    void OnDisable() => showStatsAction.Disable();
+
+    void Start()
+    {
+        if (pausePanel != null) pausePanel.SetActive(false);
+        startPosition = transform.position;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void LateUpdate()
+    {
+        if (!cameraInitialized && playerCamera != null)
+        {
+            cameraInitialized = true;
+            xRotation = 0f;
+            playerCamera.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        }
+    }
+
+    void Update()
+    {
+        if (playerHealth != null && playerHealth.isDead) return;
+
+        // Skip normal movement while wall climbing, but keep mouse look
+        WallClimb wallClimb = GetComponent<WallClimb>();
+        if (wallClimb != null && wallClimb.isClimbing)
+        {
+            goto MouseLookOnly;
+        }
+
+        if (transform.position.y <= -10f)
+        {
+            transform.position = startPosition;
+            velocity = Vector3.zero;
+            return;
+        }
+
+        isGrounded = controller.isGrounded;
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+            canDoubleJump = true;
+            hasAirDashed = false;
+        }
+
+        if (pauseAction.WasPressedThisFrame())
+        {
+            if (LevelUpManager.Instance != null && LevelUpManager.Instance.levelUpPanel.activeSelf)
+                return;
+
+            if (playerHealth != null && playerHealth.isDead) return;
+
+            isPaused = !isPaused;
+            Time.timeScale = isPaused ? 0f : 1f;
+            if (pausePanel != null) pausePanel.SetActive(isPaused);
+
+            Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isPaused;
+        }
+
+        if (isPaused) return;
+
+        if (giveEXPAction.WasPressedThisFrame())
+        {
+            if (stats != null) stats.AddEXP(100);
+        }
+
+        if (showStatsAction.IsPressed())
+        {
+            if (statsUI != null) statsUI.ShowStatsPanel();
+        }
+        else
+        {
+            if (statsUI != null) statsUI.HideStatsPanel();
+        }
+
+        Vector2 moveInput = moveAction.ReadValue<Vector2>();
+        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+        controller.Move(move * walkSpeed * Time.deltaTime);
+
+        if (isGrounded && move.magnitude > 0.1f && dashTimeRemaining <= 0)
+        {
+            if (!footstepSource.isPlaying && footstepClip != null)
+            {
+                footstepSource.clip = footstepClip;
+                footstepSource.Play();
+            }
+        }
+        else
+        {
+            footstepSource.Stop();
+        }
+
+        if (jumpAction.triggered)
+        {
+            if (isGrounded)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                if (sfxSource != null && jumpClip != null)
+                {
+                    sfxSource.PlayOneShot(jumpClip);
+                }
+            }
+            else if (hasDoubleJump && canDoubleJump)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                canDoubleJump = false;
+                if (sfxSource != null && jumpClip != null)
+                {
+                    sfxSource.PlayOneShot(jumpClip);
+                }
+            }
+        }
+
+        velocity.y += gravity * Time.deltaTime;
+
+        if (dashTimeRemaining > 0)
+        {
+            dashTimeRemaining -= Time.deltaTime;
+            controller.Move(currentDashVelocity * Time.deltaTime);
+            currentDashVelocity = Vector3.Lerp(currentDashVelocity, Vector3.zero, Time.deltaTime * 8f);
+        }
+
+        if (bounceTimeRemaining > 0)
+        {
+            bounceTimeRemaining -= Time.deltaTime;
+            controller.Move(currentBounceVelocity * Time.deltaTime);
+        }
+
+        controller.Move(velocity * Time.deltaTime);
+
+    MouseLookOnly:
+
+        // Mouse Look (always runs, even while climbing)
+        Vector2 lookInput = lookAction.ReadValue<Vector2>();
+        // Get the multiplier from your pause menu slider (defaults to 1)
+        float sensitivityMultiplier = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
+
+        // Multiply by the slider setting to change your speed dynamically
+        float mouseX = lookInput.x * mouseSensitivity * sensitivityMultiplier * Time.deltaTime;
+        float mouseY = lookInput.y * mouseSensitivity * sensitivityMultiplier * Time.deltaTime;
+
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
+        if (playerCamera != null)
+            playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        transform.Rotate(Vector3.up * mouseX);
+    }
+
+    public void PerformDash()
+    {
+        if (!isGrounded && hasAirDashed) return;
+
+        if (!isGrounded)
+            hasAirDashed = true;
+
+        Vector2 moveInput = moveAction.ReadValue<Vector2>();
+        Vector3 dashDirection = (moveInput.sqrMagnitude < 0.1f)
+            ? -transform.forward
+            : (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
+
+        if (sfxSource != null && dashClip != null)
+        {
+            sfxSource.PlayOneShot(dashClip);
+        }
+
+        float finalDashSpeed = dashSpeed * (stats != null ? stats.dashDistanceMultiplier : 1f);
+        currentDashVelocity = dashDirection * finalDashSpeed;
+        dashTimeRemaining = dashDuration;
+    }
+
+    public void BounceBack(Vector3 bounceVelocity)
+    {
+        currentBounceVelocity = bounceVelocity;
+        currentBounceVelocity.y = 4f;
+        bounceTimeRemaining = bounceDuration;
+    }
+
+    public void UnlockDoubleJump()
+    {
+        hasDoubleJump = true;
+    }
+}

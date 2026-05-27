@@ -33,6 +33,10 @@
 
 # Visual Studio cache directory
 .vs/
+.vscode/
+
+# macOS Finder metadata
+.DS_Store
 
 # Gradle cache directory
 .gradle/
@@ -43,6 +47,7 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
