@@ -14,7 +14,7 @@ public class Starfish : MonoBehaviour
     public float chargeDuration = 7.0f;
 
     [Header("Ground Contact")]
-    public float groundOffset = 0.25f;
+    public float groundOffset = 2f;
 
     [Header("Health")]
     public float maxHealth = 50f;
@@ -49,7 +49,7 @@ public class Starfish : MonoBehaviour
         FindGroundImmediately();
         initialGroundY = groundY;
 
-        if (transform.position.y > groundY + groundOffset + 0.3f)
+        /*if (transform.position.y > groundY + groundOffset + 0.3f)
         {
             transform.position = new Vector3(transform.position.x, groundY + groundOffset, transform.position.z);
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
@@ -58,7 +58,7 @@ public class Starfish : MonoBehaviour
         {
             isFalling = true;
             StartCoroutine(FallToFlat());
-        }
+        }*/
     }
 
     void Update()
@@ -111,7 +111,7 @@ public class Starfish : MonoBehaviour
         }
 
         Quaternion startRot = transform.rotation;
-        Quaternion targetRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        Quaternion targetRot = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
         Vector3 startPos = transform.position;
         Vector3 targetPos = new Vector3(transform.position.x, targetY, transform.position.z);
 
@@ -145,11 +145,11 @@ public class Starfish : MonoBehaviour
         FindGroundImmediately();
         transform.position = new Vector3(transform.position.x, groundY + groundOffset, transform.position.z);
 
-        Quaternion flatRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        Quaternion flatRot = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
         transform.rotation = flatRot;
 
         float elapsed = 0f;
-        Quaternion uprightRot = Quaternion.Euler(0f, transform.eulerAngles.y, 90f);
+        Quaternion uprightRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
 
         while (elapsed < standUpTime)
         {
@@ -169,10 +169,24 @@ public class Starfish : MonoBehaviour
             while (elapsed < facePlayerTime)
             {
                 elapsed += Time.deltaTime;
-                Vector3 direction = (player.position - transform.position).normalized;
-                Quaternion targetRot = Quaternion.LookRotation(direction);
-                targetRot = Quaternion.Euler(0f, targetRot.eulerAngles.y, 90f);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, elapsed / facePlayerTime);
+
+                // 1. Flatten the direction vector so it ignores the player's height (Y-axis)
+                Vector3 direction = (player.position - transform.position);
+                direction.y = 0f;
+                direction.Normalize();
+
+                // 2. Only rotate if the player isn't standing exactly on top of the starfish
+                if (direction != Vector3.zero)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(direction);
+
+                    // 3. Keep the upright 90-degree wheel tilt while matching the look heading
+                    targetRot = Quaternion.Euler(0f, targetRot.eulerAngles.y, -90f);
+
+                    // 4. Smoothly blend the orientation over your timer
+                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, elapsed / facePlayerTime);
+                }
+
                 yield return null;
             }
 
@@ -193,7 +207,7 @@ public class Starfish : MonoBehaviour
             float chargeStartGroundY = initialGroundY;
             elapsed = 0f;
 
-            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 90f);
+            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
 
             while (elapsed < chargeDuration)
             {
