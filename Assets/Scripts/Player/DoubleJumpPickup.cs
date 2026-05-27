@@ -10,6 +10,7 @@ public class DoubleJumpPickup : MonoBehaviour
             if (player != null)
             {
                 player.UnlockDoubleJump();
+                AbilityUnlockPopup.ShowDoubleJump();
             }
 
             Destroy(gameObject);

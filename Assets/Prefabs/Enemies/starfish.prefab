@@ -166,3 +166,9 @@ MonoBehaviour:
   deathFallTime: 3
   despawnDelay: 8
   expOnDeath: 3
+  spinSound: {fileID: 8300000, guid: 20ee36c86fb64491aa258f7f71968af2, type: 3}
+  spinContinueSound: {fileID: 8300000, guid: bf2beda8c42fc4e5fae6a4a9908c1231, type: 3}
+  hitPlayerSound: {fileID: 8300000, guid: c7605cbdfa3ae44b0b6cf4c1b4718bbe, type: 3}
+  hurtSound: {fileID: 8300000, guid: ae3e46be7808f483a9f865e3d443be46, type: 3}
+  soundVolume: 1
+  hitPlayerSoundCooldown: 2

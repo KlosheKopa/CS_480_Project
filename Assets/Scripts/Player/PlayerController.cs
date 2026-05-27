@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public AudioSource sfxSource;
     public AudioClip footstepClip;
     public AudioClip jumpClip;
+    public AudioClip doubleJumpClip;
     public AudioClip dashClip;
 
     [Header("Mouse Look")]
@@ -196,9 +197,9 @@ public class PlayerController : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 canDoubleJump = false;
-                if (sfxSource != null && jumpClip != null)
+                if (sfxSource != null && doubleJumpClip != null)
                 {
-                    sfxSource.PlayOneShot(jumpClip);
+                    sfxSource.PlayOneShot(doubleJumpClip);
                 }
             }
         }

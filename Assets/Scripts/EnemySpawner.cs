@@ -75,6 +75,12 @@ public class UltimateEnemySpawner : MonoBehaviour
         {
             GameObject spawnedEnemy = Instantiate(enemyPrefab, hit.position, Quaternion.identity);
             currentEnemyCount++;
+
+            Jellyfish jelly = spawnedEnemy.GetComponent<Jellyfish>();
+            if (jelly != null) jelly.OnDeath += () => currentEnemyCount--;
+
+            CrabMonsterEnemy crab = spawnedEnemy.GetComponent<CrabMonsterEnemy>();
+            if (crab != null) crab.OnDeath += () => currentEnemyCount--;
         }
     }
 
