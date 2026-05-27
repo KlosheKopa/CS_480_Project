@@ -10,6 +10,7 @@ public class WallClimbPickup : MonoBehaviour
             if (wallClimb != null)
             {
                 wallClimb.hasAbility = true;   // Give the ability
+                AbilityUnlockPopup.ShowWallClimb();
             }
 
             Destroy(gameObject);
