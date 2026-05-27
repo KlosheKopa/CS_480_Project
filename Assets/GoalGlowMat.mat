@@ -119,9 +119,15 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+<<<<<<< Updated upstream:Assets/GoalGlowMat.mat
     - _BaseColor: {r: 0.8553459, g: 0.72141635, b: 0, a: 1}
     - _Color: {r: 0.8553459, g: 0.72141635, b: 0, a: 1}
     - _EmissionColor: {r: 804253760, g: 698984900, b: 0, a: 1}
+=======
+    - _BaseColor: {r: 0.18823427, g: 0.8867924, b: 0.37395367, a: 1}
+    - _Color: {r: 0.18823424, g: 0.8867924, b: 0.37395364, a: 1}
+    - _EmissionColor: {r: 0.15186384, g: 0.46698114, b: 0.011013704, a: 1}
+>>>>>>> Stashed changes:Assets/Materials/green.mat
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

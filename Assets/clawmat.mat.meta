@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream:Assets/clawmat.mat.meta
 guid: f3afdb6f56f8faa4f815110a8ce3cfd6
+=======
+guid: e41536eddcb78714ba964f20a9bf4bb2
+>>>>>>> Stashed changes:Assets/TextMesh Pro/Resources/Fonts & Materials/Web 1.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000

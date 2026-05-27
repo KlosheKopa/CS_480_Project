@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream:Assets/clawbake.001.png.meta
 guid: 05da51603c211d2498d5541e4260bf64
+=======
+guid: 9f9f55a1815b87142b82471760f83ba8
+>>>>>>> Stashed changes:Assets/PNGs/clawbake.001.png.meta
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
