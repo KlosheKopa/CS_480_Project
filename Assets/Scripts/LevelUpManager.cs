@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
-using System.Collections;
 
 public class LevelUpManager : MonoBehaviour
 {
@@ -11,7 +10,6 @@ public class LevelUpManager : MonoBehaviour
     [Header("UI")]
     public GameObject levelUpPanel;
     public UpgradeButton[] upgradeButtons;
-    public float misclickDelay = 0.7f;
 
     private PlayerStats stats;
     private ClawShooter clawShooter;
@@ -37,10 +35,6 @@ public class LevelUpManager : MonoBehaviour
         Cursor.visible = true;
 
         levelUpPanel.SetActive(true);
-
-        SetButtonsInteractable(false);
-        // Start the timer using REALTIME because the game is paused
-        StartCoroutine(EnableButtonsRoutine());
 
         List<string> available = new List<string>();
 
@@ -71,21 +65,6 @@ public class LevelUpManager : MonoBehaviour
             string key = available[i % available.Count];
             string displayText = GetDisplayName(key);
             upgradeButtons[i].Setup(key, displayText);
-        }
-    }
-
-    private IEnumerator EnableButtonsRoutine()
-    {
-        yield return new WaitForSecondsRealtime(misclickDelay);
-        SetButtonsInteractable(true);
-    }
-
-    private void SetButtonsInteractable(bool state)
-    {
-        foreach (UpgradeButton upBtn in upgradeButtons)
-        {
-            Button btn = upBtn.GetComponent<Button>();
-            if (btn != null) btn.interactable = state;
         }
     }
 
@@ -139,10 +118,6 @@ public class LevelUpManager : MonoBehaviour
         }
 
         levelUpPanel.SetActive(false);
-
-        Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
 
         // Re-enable shooting immediately (safety layer)
         if (clawShooter != null) clawShooter.enabled = true;

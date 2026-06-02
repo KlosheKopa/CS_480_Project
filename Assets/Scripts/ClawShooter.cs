@@ -7,8 +7,6 @@ public class ClawShooter : MonoBehaviour
     public GameObject bubblePrefab;
     public Transform shootPoint;
     public Camera playerCamera;
-    public AudioClip bubbleShootClip;
-    [Range(0f, 1f)] public float bubbleShootVolume = 1f;
 
     private PlayerInput playerInput;
     private InputAction shootAction;
@@ -72,11 +70,6 @@ public class ClawShooter : MonoBehaviour
         if (rb != null)
         {
             rb.linearVelocity = playerCamera.transform.forward * stats.bubbleSpeed;
-        }
-
-        if (bubbleShootClip != null)
-        {
-            AudioSource.PlayClipAtPoint(bubbleShootClip, shootPoint.position, bubbleShootVolume);
         }
     }
 }
