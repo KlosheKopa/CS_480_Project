@@ -14,7 +14,7 @@ public class Starfish : MonoBehaviour
     public float chargeDuration = 7.0f;
 
     [Header("Ground Contact")]
-    public float groundOffset = 2f;
+    public float groundOffset = 0.25f;
 
     [Header("Health")]
     public float maxHealth = 50f;
@@ -28,14 +28,6 @@ public class Starfish : MonoBehaviour
     public float despawnDelay = 8f;
     public int expOnDeath = 3;
 
-    [Header("Audio")]
-    public AudioClip spinSound;
-    public AudioClip spinContinueSound;
-    public AudioClip hitPlayerSound;
-    public AudioClip hurtSound;
-    [Range(0f, 1f)] public float soundVolume = 1f;
-    public float hitPlayerSoundCooldown = 2f;
-
     private Transform player;
     private StarfishState currentState = StarfishState.Flat;
     private bool isDead = false;
@@ -47,22 +39,17 @@ public class Starfish : MonoBehaviour
 
     private Vector3 phase2Position;
     private Vector3 lockedChargeDirection;
-    private AudioSource audioSource;
-    private AudioSource spinIntroSource;
-    private AudioSource spinContinueSource;
-    private float lastHitPlayerSoundTime = -Mathf.Infinity;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
         currentState = StarfishState.Flat;
-        SetupAudioSources();
 
         FindGroundImmediately();
         initialGroundY = groundY;
 
-        /*if (transform.position.y > groundY + groundOffset + 0.3f)
+        if (transform.position.y > groundY + groundOffset + 0.3f)
         {
             transform.position = new Vector3(transform.position.x, groundY + groundOffset, transform.position.z);
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
@@ -71,7 +58,7 @@ public class Starfish : MonoBehaviour
         {
             isFalling = true;
             StartCoroutine(FallToFlat());
-        }*/
+        }
     }
 
     void Update()
@@ -112,7 +99,6 @@ public class Starfish : MonoBehaviour
 
     private IEnumerator FallToFlat()
     {
-        StopSpinSound();
         isFalling = true;
         FindGroundImmediately();
 
@@ -125,7 +111,7 @@ public class Starfish : MonoBehaviour
         }
 
         Quaternion startRot = transform.rotation;
-        Quaternion targetRot = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
+        Quaternion targetRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         Vector3 startPos = transform.position;
         Vector3 targetPos = new Vector3(transform.position.x, targetY, transform.position.z);
 
@@ -159,11 +145,11 @@ public class Starfish : MonoBehaviour
         FindGroundImmediately();
         transform.position = new Vector3(transform.position.x, groundY + groundOffset, transform.position.z);
 
-        Quaternion flatRot = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
+        Quaternion flatRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         transform.rotation = flatRot;
 
         float elapsed = 0f;
-        Quaternion uprightRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        Quaternion uprightRot = Quaternion.Euler(0f, transform.eulerAngles.y, 90f);
 
         while (elapsed < standUpTime)
         {
@@ -183,24 +169,10 @@ public class Starfish : MonoBehaviour
             while (elapsed < facePlayerTime)
             {
                 elapsed += Time.deltaTime;
-
-                // 1. Flatten the direction vector so it ignores the player's height (Y-axis)
-                Vector3 direction = (player.position - transform.position);
-                direction.y = 0f;
-                direction.Normalize();
-
-                // 2. Only rotate if the player isn't standing exactly on top of the starfish
-                if (direction != Vector3.zero)
-                {
-                    Quaternion targetRot = Quaternion.LookRotation(direction);
-
-                    // 3. Keep the upright 90-degree wheel tilt while matching the look heading
-                    targetRot = Quaternion.Euler(0f, targetRot.eulerAngles.y, -90f);
-
-                    // 4. Smoothly blend the orientation over your timer
-                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, elapsed / facePlayerTime);
-                }
-
+                Vector3 direction = (player.position - transform.position).normalized;
+                Quaternion targetRot = Quaternion.LookRotation(direction);
+                targetRot = Quaternion.Euler(0f, targetRot.eulerAngles.y, 90f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, elapsed / facePlayerTime);
                 yield return null;
             }
 
@@ -208,7 +180,6 @@ public class Starfish : MonoBehaviour
             lockedChargeDirection = Vector3.ProjectOnPlane(player.position - transform.position, Vector3.up).normalized;
 
             float actualWindUp = windUpTime > 0.1f ? windUpTime : 2.5f;
-            StartSpinSound();
             elapsed = 0f;
             while (elapsed < actualWindUp)
             {
@@ -222,7 +193,7 @@ public class Starfish : MonoBehaviour
             float chargeStartGroundY = initialGroundY;
             elapsed = 0f;
 
-            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, -90f);
+            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 90f);
 
             while (elapsed < chargeDuration)
             {
@@ -252,8 +223,6 @@ public class Starfish : MonoBehaviour
                 transform.Rotate(-1600f * Time.deltaTime, 0f, 0f);
                 yield return null;
             }
-
-            StopSpinSound();
         }
     }
 
@@ -266,7 +235,6 @@ public class Starfish : MonoBehaviour
             if (ph != null)
             {
                 ph.TakeDamage(damageToPlayer);
-                PlayHitPlayerSound();
             }
         }
     }
@@ -276,13 +244,11 @@ public class Starfish : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damage;
-        PlaySound(hurtSound);
         Debug.Log($"⭐ Starfish took {damage} damage. HP left: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
         {
             isDead = true;
-            StopSpinSound();
 
             PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
             if (playerStats != null)
@@ -336,69 +302,5 @@ public class Starfish : MonoBehaviour
 
         yield return new WaitForSeconds(despawnDelay - deathFallTime);
         Destroy(gameObject);
-    }
-
-    private void SetupAudioSources()
-    {
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f;
-
-        spinIntroSource = gameObject.AddComponent<AudioSource>();
-        spinIntroSource.playOnAwake = false;
-        spinIntroSource.spatialBlend = 1f;
-
-        spinContinueSource = gameObject.AddComponent<AudioSource>();
-        spinContinueSource.playOnAwake = false;
-        spinContinueSource.spatialBlend = 1f;
-        spinContinueSource.loop = true;
-    }
-
-    private void StartSpinSound()
-    {
-        StopSpinSound();
-
-        if (spinSound == null && spinContinueSound == null) return;
-
-        double startTime = AudioSettings.dspTime;
-
-        if (spinSound != null)
-        {
-            spinIntroSource.clip = spinSound;
-            spinIntroSource.volume = soundVolume;
-            spinIntroSource.loop = false;
-            spinIntroSource.PlayScheduled(startTime);
-        }
-
-        if (spinContinueSound != null)
-        {
-            double continueStartTime = spinSound != null ? startTime + spinSound.length : startTime;
-
-            spinContinueSource.clip = spinContinueSound;
-            spinContinueSource.volume = soundVolume;
-            spinContinueSource.loop = true;
-            spinContinueSource.PlayScheduled(continueStartTime);
-        }
-    }
-
-    private void StopSpinSound()
-    {
-        if (spinIntroSource != null) spinIntroSource.Stop();
-        if (spinContinueSource != null) spinContinueSource.Stop();
-    }
-
-    private void PlayHitPlayerSound()
-    {
-        if (Time.time < lastHitPlayerSoundTime + hitPlayerSoundCooldown) return;
-
-        lastHitPlayerSoundTime = Time.time;
-        PlaySound(hitPlayerSound);
-    }
-
-    private void PlaySound(AudioClip clip)
-    {
-        if (clip == null || audioSource == null) return;
-
-        audioSource.PlayOneShot(clip, soundVolume);
     }
 }
