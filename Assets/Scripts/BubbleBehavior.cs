@@ -12,6 +12,10 @@ public class BubbleBehavior : MonoBehaviour
     public AudioClip bubblePopClip;
     [Range(0f, 1f)] public float bubblePopVolume = 1f;
 
+    [Header("Particles")]
+    public GameObject bubblePopParticles;
+    public GameObject bubbleExplosion;
+
     private Rigidbody rb;
     private float timer = 0f;
     private float ignoreCollisionTime = 0.15f;
@@ -40,6 +44,28 @@ public class BubbleBehavior : MonoBehaviour
             {
                 AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
             }
+
+            if (bubbleExplosion != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubbleExplosion, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
             Destroy(gameObject);
         }
     }
@@ -65,6 +91,28 @@ public class BubbleBehavior : MonoBehaviour
                 jelly.TakeDamage(damage);
 
 
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
             if (bubblePopClip != null)
             {
                 AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
@@ -80,6 +128,33 @@ public class BubbleBehavior : MonoBehaviour
             if (star != null)
                 star.TakeDamage(damage);
 
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
             Destroy(gameObject);
             return;
         }
@@ -90,6 +165,28 @@ public class BubbleBehavior : MonoBehaviour
             BlackSeaUrchin urchin = other.GetComponentInParent<BlackSeaUrchin>();
             if (urchin != null)
                 urchin.PlayBubbleHitSound();
+
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
 
             Destroy(gameObject);
             return;
@@ -106,6 +203,29 @@ public class BubbleBehavior : MonoBehaviour
             {
                 AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
             }
+
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
             Destroy(gameObject);
             return;
         }
@@ -117,15 +237,101 @@ public class BubbleBehavior : MonoBehaviour
             if (crab != null)
                 crab.TakeDamage(damage);
 
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
             Destroy(gameObject);
             return;
+        }// === JELLYBOSS ===
+        else if (other.CompareTag("JellyBoss"))
+        {
+            JellyBoss jelly = other.GetComponent<JellyBoss>();
+            if (jelly != null)
+                jelly.TakeDamage(damage);
+
+
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+            Destroy(gameObject);
+            return;
+
         }
 
         // Destroy on walls / environment
-        Destroy(gameObject);
         if (bubblePopClip != null)
         {
             AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
         }
+
+        if (bubblePopParticles != null)
+        {
+            GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+            // 2. Try to get the Particle System component from the clone
+            ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+            if (ps != null)
+            {
+                // 3. Calculate how long it takes to play completely
+                float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                // 4. Destroy the cloned particle object after that exact delay
+                Destroy(spawnedParticles, totalDuration);
+            }
+            else
+            {
+                // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                Destroy(spawnedParticles, 3.0f);
+            }
+        }
+        Destroy(gameObject);
     }
 }
