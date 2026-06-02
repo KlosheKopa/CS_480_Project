@@ -8,10 +8,6 @@ public class BubbleBehavior : MonoBehaviour
     public float floatDelay = 1f;
     public float damage = 10f;
 
-    [Header("Audio")]
-    public AudioClip bubblePopClip;
-    [Range(0f, 1f)] public float bubblePopVolume = 1f;
-
     private Rigidbody rb;
     private float timer = 0f;
     private float ignoreCollisionTime = 0.15f;
@@ -35,13 +31,7 @@ public class BubbleBehavior : MonoBehaviour
             rb.AddForce(Vector3.up * upwardForce, ForceMode.Acceleration);
 
         if (timer >= lifeTime)
-        {
-            if (bubblePopClip != null)
-            {
-                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
-            }
             Destroy(gameObject);
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -50,6 +40,12 @@ public class BubbleBehavior : MonoBehaviour
         if (other.transform.root.CompareTag("Player"))
         {
             hasHit = false;
+            return;
+        }
+
+        // NEW: Ignore Squid's Ink Bullets so they pass through each other
+        if (other.GetComponent<InkBullet>() != null || other.GetComponentInParent<InkBullet>() != null)
+        {
             return;
         }
 
@@ -64,15 +60,10 @@ public class BubbleBehavior : MonoBehaviour
             if (jelly != null)
                 jelly.TakeDamage(damage);
 
-
-            if (bubblePopClip != null)
-            {
-                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
-            }
             Destroy(gameObject);
             return;
-
         }
+
         // === STARFISH ===
         else if (other.CompareTag("Starfish"))
         {
@@ -84,38 +75,12 @@ public class BubbleBehavior : MonoBehaviour
             return;
         }
 
-        // === URCHIN ===
-        else if (other.GetComponent<BlackSeaUrchin>() != null || other.GetComponentInParent<BlackSeaUrchin>() != null)
-        {
-            BlackSeaUrchin urchin = other.GetComponentInParent<BlackSeaUrchin>();
-            if (urchin != null)
-                urchin.PlayBubbleHitSound();
-
-            Destroy(gameObject);
-            return;
-        }
-
-        // === SQUID SNIPER (NEW) ===
+        // === SQUID SNIPER ===
         else if (other.GetComponent<SquidSniper>() != null || other.GetComponentInParent<SquidSniper>() != null)
         {
             SquidSniper squid = other.GetComponentInParent<SquidSniper>();
             if (squid != null)
                 squid.TakeDamage(damage);
-
-            if (bubblePopClip != null)
-            {
-                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
-            }
-            Destroy(gameObject);
-            return;
-        }
-
-        // === CRAB MONSTER ===
-        else if (other.GetComponent<CrabMonsterEnemy>() != null || other.GetComponentInParent<CrabMonsterEnemy>() != null)
-        {
-            CrabMonsterEnemy crab = other.GetComponentInParent<CrabMonsterEnemy>();
-            if (crab != null)
-                crab.TakeDamage(damage);
 
             Destroy(gameObject);
             return;
@@ -123,9 +88,5 @@ public class BubbleBehavior : MonoBehaviour
 
         // Destroy on walls / environment
         Destroy(gameObject);
-        if (bubblePopClip != null)
-        {
-            AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
-        }
     }
 }
