@@ -415,3 +415,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63bfd1905bef7954987f764119fcb236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoubleJumpPickup
+  pickupSound: {fileID: 8300000, guid: 633d7a320f0bf42438f353576782e045, type: 3}
+  pickupVolume: 1

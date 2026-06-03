@@ -415,3 +415,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b1b4b5bf17ad4640b42ec841dc8850d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WallClimbPickup
+  pickupSound: {fileID: 8300000, guid: 633d7a320f0bf42438f353576782e045, type: 3}
+  pickupVolume: 1

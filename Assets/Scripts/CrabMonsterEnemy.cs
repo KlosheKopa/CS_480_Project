@@ -15,6 +15,10 @@ public class CrabMonsterEnemy : MonoBehaviour
     public float turnSpeed = 8f;
     public float groundRayDistance = 8f;
     public float groundOffset = 0.05f;
+    public float groundSnapDistance = 0.75f;
+    public float minGroundNormalY = 0.3f;
+    public float gravity = -25f;
+    public float maxFallSpeed = -45f;
 
     [Header("Damage")]
     public float touchDamage = 18f;
@@ -55,6 +59,7 @@ public class CrabMonsterEnemy : MonoBehaviour
     private string currentLoopTrigger;
     private bool hasIntimidatedThisChase;
     private bool isIntimidating;
+    private float verticalVelocity;
 
     private void Awake()
     {
@@ -94,7 +99,12 @@ public class CrabMonsterEnemy : MonoBehaviour
 
     private void Update()
     {
-        if (isDead || player == null) return;
+        if (isDead) return;
+        if (player == null)
+        {
+            ApplyVerticalMotion();
+            return;
+        }
 
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > detectionRange)
@@ -102,6 +112,7 @@ public class CrabMonsterEnemy : MonoBehaviour
             hasIntimidatedThisChase = false;
             StopWalkSound();
             PlayLoop(idleTrigger);
+            ApplyVerticalMotion();
             return;
         }
 
@@ -110,10 +121,15 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (!hasIntimidatedThisChase)
         {
             StartCoroutine(IntimidateBeforeChase());
+            ApplyVerticalMotion();
             return;
         }
 
-        if (isIntimidating) return;
+        if (isIntimidating)
+        {
+            ApplyVerticalMotion();
+            return;
+        }
 
         if (distance > attackRange)
         {
@@ -126,6 +142,8 @@ public class CrabMonsterEnemy : MonoBehaviour
             StopWalkSound();
             TryDamagePlayer(player.gameObject);
         }
+
+        ApplyVerticalMotion();
     }
 
     private void OnTriggerStay(Collider other)
@@ -162,7 +180,6 @@ public class CrabMonsterEnemy : MonoBehaviour
         if (direction.sqrMagnitude < 0.001f) return;
 
         transform.position += direction.normalized * moveSpeed * Time.deltaTime;
-        SnapToGround();
     }
 
     private void FacePlayer()
@@ -177,28 +194,51 @@ public class CrabMonsterEnemy : MonoBehaviour
 
     private void SnapToGround()
     {
+        if (!TryFindGround(out Vector3 groundPoint)) return;
+
+        transform.position = new Vector3(transform.position.x, groundPoint.y + groundOffset, transform.position.z);
+        verticalVelocity = 0f;
+    }
+
+    private void ApplyVerticalMotion()
+    {
+        if (TryFindGround(out Vector3 groundPoint))
+        {
+            float targetY = groundPoint.y + groundOffset;
+            float yDifference = transform.position.y - targetY;
+
+            if (yDifference <= groundSnapDistance)
+            {
+                transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
+                verticalVelocity = 0f;
+                return;
+            }
+        }
+
+        verticalVelocity = Mathf.Max(verticalVelocity + gravity * Time.deltaTime, maxFallSpeed);
+        transform.position += Vector3.up * verticalVelocity * Time.deltaTime;
+    }
+
+    private bool TryFindGround(out Vector3 groundPoint)
+    {
         Vector3 rayStart = transform.position + Vector3.up * 2f;
         RaycastHit[] hits = Physics.RaycastAll(rayStart, Vector3.down, groundRayDistance);
         float closestDistance = float.MaxValue;
-        bool foundGround = false;
-        Vector3 groundPoint = transform.position;
+        groundPoint = transform.position;
 
         foreach (RaycastHit hit in hits)
         {
             if (hit.collider.transform.IsChildOf(transform)) continue;
+            if (hit.normal.y < minGroundNormalY) continue;
 
             if (hit.distance < closestDistance)
             {
                 closestDistance = hit.distance;
                 groundPoint = hit.point;
-                foundGround = true;
             }
         }
 
-        if (foundGround)
-        {
-            transform.position = new Vector3(transform.position.x, groundPoint.y + groundOffset, transform.position.z);
-        }
+        return closestDistance < float.MaxValue;
     }
 
     private void TryDamagePlayer(GameObject playerObject)

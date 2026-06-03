@@ -17,16 +17,18 @@ public class ClawShooter : MonoBehaviour
     void Awake()
     {
         playerInput = GetComponentInParent<PlayerInput>();
-        shootAction = playerInput.actions["Shoot"];
+        if (playerInput != null && playerInput.actions != null)
+            shootAction = playerInput.actions.FindAction("Shoot", false);
+
         stats = GetComponentInParent<PlayerStats>();
     }
 
-    void OnEnable() => shootAction.Enable();
-    void OnDisable() => shootAction.Disable();
+    void OnEnable() => shootAction?.Enable();
+    void OnDisable() => shootAction?.Disable();
 
     void Update()
     {
-        if (stats == null) return;
+        if (stats == null || shootAction == null) return;
 
         bool canShoot = Time.time >= nextFireTime;
 
@@ -50,13 +52,12 @@ public class ClawShooter : MonoBehaviour
 
     private void ShootBubble()
     {
-        if (bubblePrefab == null || shootPoint == null || playerCamera == null)
-        {
-            if (playerCamera == null) playerCamera = Camera.main;
-            if (playerCamera == null) return;
-        }
+        if (bubblePrefab == null) return;
 
-        Vector3 spawnPos = shootPoint.position;
+        if (playerCamera == null) playerCamera = Camera.main;
+        if (playerCamera == null) return;
+
+        Vector3 spawnPos = shootPoint != null ? shootPoint.position : transform.position;
         spawnPos += playerCamera.transform.right * -0.15f;
 
         GameObject bubble = Instantiate(bubblePrefab, spawnPos, Quaternion.identity);

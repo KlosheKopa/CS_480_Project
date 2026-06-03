@@ -1355,7 +1355,7 @@ MonoBehaviour:
   footstepClip: {fileID: 8300000, guid: 291c1d9f85b204a4b9550bfeb639ace6, type: 3}
   jumpClip: {fileID: 8300000, guid: ecefd5e68bcd841df81d9d7bbe355bf0, type: 3}
   doubleJumpClip: {fileID: 8300000, guid: 6dd0888505be54fa39485036cda62ea1, type: 3}
-  dashClip: {fileID: 8300000, guid: b00762fc5ab02064a83bce8dca9ded32, type: 3}
+  dashClip: {fileID: 8300000, guid: 3305fba43532a4a608c5a2761056ccb2, type: 3}
   mouseSensitivity: 100
   dashSpeed: 40
   dashDuration: 0.35
