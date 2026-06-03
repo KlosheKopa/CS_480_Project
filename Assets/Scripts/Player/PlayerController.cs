@@ -91,11 +91,22 @@ public class PlayerController : MonoBehaviour
         showStatsAction = playerInput.actions["ShowStats"];
     }
 
-    void OnEnable() => showStatsAction.Enable();
-    void OnDisable() => showStatsAction.Disable();
+    void OnEnable()
+    {
+        EnableGameplayInput();
+    }
+
+    void OnDisable()
+    {
+        showStatsAction?.Disable();
+    }
 
     void Start()
     {
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        isPaused = false;
+
         if (pausePanel != null) pausePanel.SetActive(false);
         startPosition = transform.position;
 
@@ -103,6 +114,25 @@ public class PlayerController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        EnableGameplayInput();
+    }
+
+    private void EnableGameplayInput()
+    {
+        if (playerInput == null || playerInput.actions == null) return;
+
+        playerInput.ActivateInput();
+
+        if (!string.IsNullOrEmpty(playerInput.defaultActionMap))
+            playerInput.SwitchCurrentActionMap(playerInput.defaultActionMap);
+
+        moveAction?.Enable();
+        lookAction?.Enable();
+        jumpAction?.Enable();
+        pauseAction?.Enable();
+        giveEXPAction?.Enable();
+        showStatsAction?.Enable();
     }
 
     void LateUpdate()
@@ -291,7 +321,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // ====================== KEY + DOOR DETECTION ======================
-    /*private void OnControllerColliderHit(ControllerColliderHit hit)
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (hit.gameObject.CompareTag("LockedDoor"))
         {
@@ -306,5 +336,5 @@ public class PlayerController : MonoBehaviour
                 door.OpenTheDoor();
             }
         }
-    }*/
+    }
 }

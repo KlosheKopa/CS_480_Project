@@ -267,6 +267,44 @@ public class BubbleBehavior : MonoBehaviour
             return;
         }
 
+        // === CRAB MONSTER BOSS ===
+        else if (other.GetComponent<CrabMonsterBoss>() != null || other.GetComponentInParent<CrabMonsterBoss>() != null)
+        {
+            CrabMonsterBoss crabBoss = other.GetComponentInParent<CrabMonsterBoss>();
+            if (crabBoss != null)
+                crabBoss.TakeDamage(damage);
+
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
+            Destroy(gameObject);
+            return;
+        }
+
         // === CRAB MONSTER ===
         else if (other.GetComponent<CrabMonsterEnemy>() != null || other.GetComponentInParent<CrabMonsterEnemy>() != null)
         {

@@ -55,6 +55,15 @@ public class PlayerStats : MonoBehaviour
 
     private int pendingLevelUps = 0;
 
+    private void EnsureRunData()
+    {
+        if (runData != null) return;
+
+        runData = ScriptableObject.CreateInstance<PlayerStatData>();
+        runData.name = $"{name}_RuntimePlayerStatData";
+        runData.ResetToDefaults();
+    }
+
     private void OnValidate()
     {
         maxLevel = 56;
@@ -62,6 +71,7 @@ public class PlayerStats : MonoBehaviour
 
     private void Awake()
     {
+        EnsureRunData();
         maxLevel = 56;
         RecalculateAllStats();
         if (CurrentHealth <= 0) CurrentHealth = maxHealth;
@@ -69,8 +79,7 @@ public class PlayerStats : MonoBehaviour
 
     public void RecalculateAllStats()
     {
-        // Safe check if you forgot to link the asset file
-        if (runData == null) return;
+        EnsureRunData();
 
         maxHealth = 100f + healthUpgrades * 50f;
         maxStamina = 3f + staminaUpgrades * 1f;
