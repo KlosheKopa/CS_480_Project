@@ -164,7 +164,7 @@ public class BubbleBehavior : MonoBehaviour
             Debug.Log("Leviathan Hit");
             Leviathan levi = other.GetComponentInParent<Leviathan>();
             if (levi != null)
-                levi.TakeDamage(damage);
+                levi.TakeBubbleDamage(damage);
 
             if (bubblePopParticles != null)
             {
@@ -186,11 +186,6 @@ public class BubbleBehavior : MonoBehaviour
                     // Fallback: If no system is found, delete the clone after 3 seconds anyway
                     Destroy(spawnedParticles, 3.0f);
                 }
-            }
-
-            if (bubblePopClip != null)
-            {
-                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
             }
 
             Destroy(gameObject);
