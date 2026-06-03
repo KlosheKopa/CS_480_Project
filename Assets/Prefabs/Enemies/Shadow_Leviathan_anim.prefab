@@ -1490,6 +1490,13 @@ MonoBehaviour:
   anchorObject: {fileID: 0}
   maxAnchorRadius: 50
   minimumDepthFloor: 4
+  patrolSwimClip: {fileID: 8300000, guid: bd536b8621a8643a6b2f235bfb9694d6, type: 3}
+  fastSwimClip: {fileID: 8300000, guid: a0d389e4b7221453ba0edfd608e07077, type: 3}
+  attackClip: {fileID: 8300000, guid: 65da8bd73508a4dd38e51ec174da3eb5, type: 3}
+  deathClip: {fileID: 8300000, guid: d9e951f7a269c484382a6768cc55557e, type: 3}
+  bubbleHitClip: {fileID: 8300000, guid: 98b5f76859b4d4b668cd7b386341742e, type: 3}
+  loopVolume: 1
+  sfxVolume: 1
 --- !u!54 &5606028858123170078
 Rigidbody:
   m_ObjectHideFlags: 0
