@@ -1,16 +1,19 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 using System;
 
-public class JellyBoss : MonoBehaviour
+public class JellyBoss : MonoBehaviour, IBoss
 {
-    public enum State { Idle, Preparing, Shooting, Cooldown }
+    [Header("Explicit Target Setup")]
+    [Tooltip("Drag the active Player GameObject from the Hierarchy directly into this slot.")]
+    public Transform player;
+    public Transform shootPoint;
 
     [Header("Enemy Settings")]
-    public float maxHealth = 60f;
+    public float maxHealth = 80f;
     public float moveSpeed = 4f;
     public float detectionRange = 35f;
-    public float minDistanceToPlayer = 12f; // The minimum distance to preserve
+    public float minDistanceToPlayer = 12f;
     public int experience = 15;
 
     [Header("Timings")]
@@ -24,14 +27,8 @@ public class JellyBoss : MonoBehaviour
     public int minBullets = 3;
     public int maxBullets = 5;
 
-    [Header("References")]
-    public Transform shootPoint;
-    public Transform player;
-
-    [Header("Death Effects")]
-    public GameObject bubblePopParticles; // Drag your particle prefab into this slot in the Unity Inspector
-
-    [Header("Audio Clips")]
+    [Header("Death Effects & Audio")]
+    public GameObject bubblePopParticles;
     public AudioClip floatingSound;
     public AudioClip detectedSound;
     public AudioClip shootSound;
@@ -39,31 +36,25 @@ public class JellyBoss : MonoBehaviour
     public AudioClip deathSound;
     [Range(0f, 1f)] public float soundVolume = 1f;
 
-    [Header("Drops")]
-    public GameObject greenFishPrefab;
-    public int dropEveryXItems = 3;
-
-    private static int totalKills = 0;
-    private Rigidbody rb;
-    private Collider col;
-    private AudioSource audioSource;
-    private PlayerStats playerStats;
-
     private float currentHealth;
+    private bool isDead = false;
+    private bool isBusy = false;
+
+    public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
-    public bool isDead = false;
+    public bool IsDead => isDead;
     public event Action OnDeath;
 
-    private State currentState = State.Idle;
-    private bool isChasingAudio = false;
+    private Collider col;
+    private AudioSource audioSource;
+
+    void Awake()
+    {
+        currentHealth = maxHealth;
+    }
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
-        rb.isKinematic = false; // Kept false for physical jelly movement forces
-        rb.useGravity = false;
-
         col = GetComponent<Collider>();
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
@@ -75,127 +66,100 @@ public class JellyBoss : MonoBehaviour
             audioSource.Play();
         }
 
+        // NO AUTOMATIC SEARCHES: Rely completely on the explicit reference passed in the inspector
         if (player == null)
         {
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-                playerStats = playerObj.GetComponent<PlayerStats>();
-            }
+            Debug.LogError("[JellyBoss] Explicit Player Reference is missing! Please drag your live Player from the Hierarchy into the Inspector slot.", gameObject);
         }
-        else
-        {
-            playerStats = player.GetComponent<PlayerStats>();
-        }
-
-        currentHealth = maxHealth;
     }
 
     void Update()
     {
-        if (player == null || isDead) return;
+        // Absolute safety guard against unassigned explicit references
+        if (player == null || isDead || isBusy) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
 
-        // State Machine Integration
-        switch (currentState)
-        {
-            case State.Idle:
-                HandleMovementAndState(distance);
-                break;
-            case State.Preparing:
-                TrackPlayer();
-                break;
-            case State.Shooting:
-                TrackPlayer();
-                break;
-            case State.Cooldown:
-                HandleMovementAndState(distance);
-                break;
-        }
-    }
-
-    private void HandleMovementAndState(float distance)
-    {
-        // 1. Maintain Spacing & Distance Vector Logic
         if (distance <= detectionRange)
         {
-            Vector3 directionToPlayer = (player.position - transform.position).normalized;
-
-            if (distance < minDistanceToPlayer)
-            {
-                // Back away from player to enforce minimum distance limit
-                Vector3 backAwayDirection = -directionToPlayer;
-                rb.linearVelocity = backAwayDirection * moveSpeed;
-            }
-            else if (distance > minDistanceToPlayer + 2f)
-            {
-                // Advance closer if too far out
-                rb.linearVelocity = directionToPlayer * moveSpeed;
-            }
-            else
-            {
-                // Hover calmly in place if within sweet spot range
-                rb.linearVelocity = new Vector3(0, Mathf.Sin(Time.time * 2f) * 0.5f, 0);
-            }
-
-            // 2. Trigger Shooting Loop if in Idle state
-            if (currentState == State.Idle)
-            {
-                StartCoroutine(PrepareToShootSequence());
-            }
+            StartCoroutine(ExecuteSequenceLoop());
         }
         else
         {
-            // Standard Idle Bobbing Behavior when Player is outside range
-            rb.linearVelocity = new Vector3(0, Mathf.Sin(Time.time) * 1f, 0);
+            transform.position += new Vector3(0, Mathf.Sin(Time.time) * 1f, 0) * Time.deltaTime;
         }
     }
 
-    private void TrackPlayer()
+    IEnumerator ExecuteSequenceLoop()
     {
-        Vector3 dir = (player.position - transform.position).normalized;
-        if (dir != Vector3.zero)
-        {
-            Quaternion targetRot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
-        }
-        // Maintain a subtle floating bounce during attack preparations
-        rb.linearVelocity = new Vector3(0, Mathf.Sin(Time.time * 3f) * 0.2f, 0);
-    }
-
-    private IEnumerator PrepareToShootSequence()
-    {
-        currentState = State.Preparing;
+        isBusy = true;
         PlaySound(detectedSound);
 
+        // 1. PREPARE & TRACK TARGET
         float timer = 0f;
         while (timer < prepareTime)
         {
-            TrackPlayer();
+            if (isDead || player == null) yield break;
+
+            Vector3 dir = (player.position - transform.position).normalized;
+            if (dir != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
+
+            transform.position += new Vector3(0, Mathf.Sin(Time.time * 3f) * 0.2f, 0) * Time.deltaTime;
             timer += Time.deltaTime;
             yield return null;
         }
 
-        StartCoroutine(ShootPhaseSequence());
-    }
+        // 2. SPRAY PROJECTILES
+        if (player != null && !isDead)
+        {
+            int bulletCount = UnityEngine.Random.Range(minBullets, maxBullets + 1);
+            for (int i = 0; i < bulletCount; i++)
+            {
+                if (isDead || player == null) yield break;
 
-    private IEnumerator ShootPhaseSequence()
-    {
-        currentState = State.Shooting;
-        rb.linearVelocity = Vector3.zero; // Hold steady while spraying bullets
+                ShootProjectile();
+                yield return new WaitForSeconds(timeBetweenBullets);
+            }
+        }
 
-        int bulletCount = UnityEngine.Random.Range(minBullets, maxBullets + 1);
-        for (int i = 0; i < bulletCount; i++)
+        // 3. SPACING MOVEMENT & COOLDOWN
+        float cooldownTimer = 0f;
+        while (cooldownTimer < cooldownTime)
         {
             if (isDead || player == null) yield break;
 
-            ShootProjectile();
-            yield return new WaitForSeconds(timeBetweenBullets);
+            float currentDistance = Vector3.Distance(transform.position, player.position);
+            Vector3 directionToPlayer = (player.position - transform.position).normalized;
+
+            if (directionToPlayer != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(directionToPlayer);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
+
+            if (currentDistance < minDistanceToPlayer)
+            {
+                Vector3 backAwayDirection = -directionToPlayer;
+                transform.position = Vector3.MoveTowards(transform.position, transform.position + backAwayDirection, moveSpeed * Time.deltaTime);
+            }
+            else if (currentDistance > minDistanceToPlayer + 2f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
+            }
+            else
+            {
+                transform.position += new Vector3(0, Mathf.Sin(Time.time * 2f) * 0.5f, 0) * Time.deltaTime;
+            }
+
+            cooldownTimer += Time.deltaTime;
+            yield return null;
         }
 
-        StartCoroutine(CooldownSequence());
+        isBusy = false;
     }
 
     private void ShootProjectile()
@@ -205,32 +169,22 @@ public class JellyBoss : MonoBehaviour
         Transform spawnLocation = shootPoint != null ? shootPoint : transform;
         Vector3 directionToPlayer = (player.position - spawnLocation.position).normalized;
 
-        // Spawn slightly forward to prevent self-collision clips
-        Vector3 spawnPos = spawnLocation.position + directionToPlayer * 0.8f;
+        Vector3 spawnPos = spawnLocation.position + directionToPlayer * 7f;
         GameObject projectile = Instantiate(inkProjectilePrefab, spawnPos, Quaternion.LookRotation(directionToPlayer));
 
         PlaySound(shootSound);
 
-        // Pass velocity directions if the bullet script requires explicit initializers
         var bulletScript = projectile.GetComponent<InkBullet>();
         if (bulletScript != null)
         {
             bulletScript.Initialize(directionToPlayer);
         }
 
-        // Standard safety collision cleanups
         Collider bulletCollider = projectile.GetComponent<Collider>();
         if (bulletCollider != null && col != null)
         {
             Physics.IgnoreCollision(bulletCollider, col, true);
         }
-    }
-
-    private IEnumerator CooldownSequence()
-    {
-        currentState = State.Cooldown;
-        yield return new WaitForSeconds(cooldownTime);
-        currentState = State.Idle;
     }
 
     public void TakeDamage(float damage)
@@ -240,21 +194,19 @@ public class JellyBoss : MonoBehaviour
         currentHealth -= damage;
         PlaySound(hurtSound);
 
-        // .CompareTo(0f) returns 1 if health is greater than 0.
-        // If it does NOT return 1, health is 0 or negative.
-        if (currentHealth.CompareTo(0f) != 1)
+        if (currentHealth <= 0f)
         {
+            isDead = true;
+            StopAllCoroutines();
             StartCoroutine(DeathSequence());
         }
     }
 
     private IEnumerator DeathSequence()
     {
-        isDead = true;
-
         if (audioSource != null)
         {
-            audioSource.Stop(); // Stop idle/chase sounds
+            audioSource.Stop();
             if (deathSound != null) audioSource.PlayOneShot(deathSound);
         }
 
@@ -265,33 +217,26 @@ public class JellyBoss : MonoBehaviour
 
             if (ps != null)
             {
-                // Calculate how long it takes to play the system completely
                 float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
                 Destroy(spawnedParticles, totalDuration);
             }
             else
             {
-                // Fallback safety deletion if no particle system component is found
                 Destroy(spawnedParticles, 3.0f);
             }
-
         }
 
-            OnDeath?.Invoke();
+        OnDeath?.Invoke();
 
-        // === NEW: Award 1 EXP to the player ===
-        PlayerStats playerStats = GameObject.FindWithTag("Player").GetComponent<PlayerStats>();
+        PlayerStats playerStats = GameObject.FindWithTag("Player")?.GetComponent<PlayerStats>();
         if (playerStats != null)
         {
             playerStats.AddEXP(experience);
-            Debug.Log("Jellyfish killed - Awarded 1 EXP to player");
+            Debug.Log($"Jellyfish killed - Awarded {experience} EXP to player");
         }
 
-        rb.linearVelocity = Vector3.zero;
-        rb.isKinematic = true;
         if (col != null) col.enabled = false;
 
-        // Disable TopDamageTrigger too
         TopDamageTrigger topTrigger = GetComponentInChildren<TopDamageTrigger>();
         if (topTrigger != null)
         {
@@ -300,12 +245,24 @@ public class JellyBoss : MonoBehaviour
             if (tCol != null) tCol.enabled = false;
         }
 
-        Debug.Log("Jellyfish died - collider and physics disabled");
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer rend in renderers)
+        {
+            rend.enabled = false;
+        }
 
-        // Instantly despawn the enemy object from the scene
+        if (deathSound != null)
+        {
+            yield return new WaitForSeconds(deathSound.length);
+        }
+        else
+        {
+            yield return null;
+        }
+
         Destroy(gameObject);
-        yield break;
     }
+
 
     private void PlaySound(AudioClip clip)
     {

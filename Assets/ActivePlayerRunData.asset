@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecc20f09a199cce4b9c61c8e591cfce1, type: 3}
+  m_Name: ActivePlayerRunData
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatData
+  currentLevel: 1
+  currentEXP: 0
+  expToNextLevel: 10
+  healthUpgrades: 0
+  staminaUpgrades: 0
+  regenPauseUpgrades: 0
+  regenSpeedUpgrades: 0
+  dashDistanceUpgrades: 0
+  bubbleDamageUpgrades: 0
+  bubbleFireRateUpgrades: 0
+  bubbleSpeedUpgrades: 0
+  defenseUpgrades: 0
+  invincibilityUpgrades: 0
+  healUpgrades: 0

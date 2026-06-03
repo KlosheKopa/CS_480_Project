@@ -8,6 +8,7 @@ TagManager:
   - SquidSniper
   - Starfish
   - JellyBoss
+  - Leviathan
   layers:
   - Default
   - TransparentFX

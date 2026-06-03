@@ -54,12 +54,15 @@ public class PlayerStamina : MonoBehaviour
         if (stats == null || stats.CurrentStamina < stats.staminaCostPerDash)
             return;
 
-        GetComponent<PlayerController>().PerformDash();
+        // Only consume stamina if the dash actually happens
+        bool dashExecuted = GetComponent<PlayerController>().TryPerformDash();
 
-        stats.CurrentStamina -= stats.staminaCostPerDash;
-        RefreshStaminaBar();
-
-        regenPauseTimer = stats.staminaRegenPauseAfterDash;
+        if (dashExecuted)
+        {
+            stats.CurrentStamina -= stats.staminaCostPerDash;
+            RefreshStaminaBar();
+            regenPauseTimer = stats.staminaRegenPauseAfterDash;
+        }
     }
 
     public void RefreshStaminaBar()

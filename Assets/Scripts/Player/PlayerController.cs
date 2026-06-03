@@ -36,6 +36,10 @@ public class PlayerController : MonoBehaviour
     public bool hasDoubleJump = false;
     private bool canDoubleJump = false;
 
+    [Header("Key System")]
+    public bool hasKey = false;
+    public GameObject keyUI;
+
     private CharacterController controller;
     [HideInInspector] public Vector3 velocity;
     private bool isGrounded;
@@ -94,6 +98,8 @@ public class PlayerController : MonoBehaviour
     {
         if (pausePanel != null) pausePanel.SetActive(false);
         startPosition = transform.position;
+
+        if (keyUI != null) keyUI.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -241,9 +247,11 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX);
     }
 
-    public void PerformDash()
+    // ====================== DASH SYSTEM ======================
+    public bool TryPerformDash()
     {
-        if (!isGrounded && hasAirDashed) return;
+        if (!isGrounded && hasAirDashed)
+            return false; // Already used air dash
 
         if (!isGrounded)
             hasAirDashed = true;
@@ -261,6 +269,13 @@ public class PlayerController : MonoBehaviour
         float finalDashSpeed = dashSpeed * (stats != null ? stats.dashDistanceMultiplier : 1f);
         currentDashVelocity = dashDirection * finalDashSpeed;
         dashTimeRemaining = dashDuration;
+
+        return true; // Dash executed successfully
+    }
+
+    public void PerformDash()
+    {
+        TryPerformDash();
     }
 
     public void BounceBack(Vector3 bounceVelocity)
@@ -274,4 +289,22 @@ public class PlayerController : MonoBehaviour
     {
         hasDoubleJump = true;
     }
+
+    // ====================== KEY + DOOR DETECTION ======================
+    /*private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.gameObject.CompareTag("LockedDoor"))
+        {
+            LockedDoor door = hit.gameObject.GetComponent<LockedDoor>();
+            if (door != null && hasKey && !door.isOpen)
+            {
+                hasKey = false;
+
+                if (keyUI != null)
+                    keyUI.SetActive(false);
+
+                door.OpenTheDoor();
+            }
+        }
+    }*/
 }

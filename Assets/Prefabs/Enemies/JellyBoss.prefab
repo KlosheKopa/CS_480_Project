@@ -276,7 +276,7 @@ MonoBehaviour:
   minBullets: 5
   maxBullets: 6
   shootPoint: {fileID: 411172957117022927}
-  player: {fileID: 0}
+  player: {fileID: 1106490759393968609, guid: 14703fe93f739c94f9038c7f6cca05c6, type: 3}
   bubblePopParticles: {fileID: 4918059086496244249, guid: 114d6fdab75eff14090e26764a517311, type: 3}
   floatingSound: {fileID: 0}
   detectedSound: {fileID: 0}

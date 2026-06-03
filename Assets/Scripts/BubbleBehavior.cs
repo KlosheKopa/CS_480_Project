@@ -158,13 +158,50 @@ public class BubbleBehavior : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        // === LEVIATHAN ===
+        else if (other.CompareTag("Leviathan"))
+        {
+            Debug.Log("Leviathan Hit");
+            Leviathan levi = other.GetComponentInParent<Leviathan>();
+            if (levi != null)
+                levi.TakeDamage(damage);
 
+            if (bubblePopParticles != null)
+            {
+                GameObject spawnedParticles = Instantiate(bubblePopParticles, transform.position, Quaternion.identity);
+
+                // 2. Try to get the Particle System component from the clone
+                ParticleSystem ps = spawnedParticles.GetComponent<ParticleSystem>();
+
+                if (ps != null)
+                {
+                    // 3. Calculate how long it takes to play completely
+                    float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax;
+
+                    // 4. Destroy the cloned particle object after that exact delay
+                    Destroy(spawnedParticles, totalDuration);
+                }
+                else
+                {
+                    // Fallback: If no system is found, delete the clone after 3 seconds anyway
+                    Destroy(spawnedParticles, 3.0f);
+                }
+            }
+
+            if (bubblePopClip != null)
+            {
+                AudioSource.PlayClipAtPoint(bubblePopClip, transform.position, bubblePopVolume);
+            }
+
+            Destroy(gameObject);
+            return;
+        }
         // === URCHIN ===
         else if (other.GetComponent<BlackSeaUrchin>() != null || other.GetComponentInParent<BlackSeaUrchin>() != null)
         {
             BlackSeaUrchin urchin = other.GetComponentInParent<BlackSeaUrchin>();
-            if (urchin != null)
-                urchin.PlayBubbleHitSound();
+            /*if (urchin != null)
+                urchin.PlayBubbleHitSound();*/
 
             if (bubblePopParticles != null)
             {

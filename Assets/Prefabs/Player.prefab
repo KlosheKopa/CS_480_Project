@@ -1055,8 +1055,6 @@ MonoBehaviour:
   bubblePrefab: {fileID: 8801372040468971100, guid: f4297ae0512e6724da9b9b1689ed32e7, type: 3}
   shootPoint: {fileID: 795030019030973630}
   playerCamera: {fileID: 7431036457774427577}
-  bubbleShootClip: {fileID: 8300000, guid: bb11194e77f394486859160e9bea4e9b, type: 3}
-  bubbleShootVolume: 1
 --- !u!1 &5092120731445343546
 GameObject:
   m_ObjectHideFlags: 0
@@ -1365,6 +1363,8 @@ MonoBehaviour:
   pausePanel: {fileID: 4382116077297731933}
   statsUI: {fileID: 4131041652172977253}
   hasDoubleJump: 0
+  hasKey: 0
+  keyUI: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   playerCamera: {fileID: 3360872337523649402}
 --- !u!114 &6450074536105427138
@@ -1474,6 +1474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b93a424a6dd4d8d4797327bb2eb3a770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  runData: {fileID: 11400000, guid: bdb7f67d05404204e84dd61f93a08d9e, type: 2}
   maxHealth: 100
   maxStamina: 3
   staminaCostPerDash: 1
@@ -1486,21 +1487,7 @@ MonoBehaviour:
   defense: 0
   invincibilityTime: 1
   dashDistanceMultiplier: 1
-  currentLevel: 1
-  currentEXP: 0
-  expToNextLevel: 10
   maxLevel: 56
-  healthUpgrades: 0
-  staminaUpgrades: 0
-  regenPauseUpgrades: 0
-  regenSpeedUpgrades: 0
-  dashDistanceUpgrades: 0
-  bubbleDamageUpgrades: 0
-  bubbleFireRateUpgrades: 0
-  bubbleSpeedUpgrades: 0
-  defenseUpgrades: 0
-  invincibilityUpgrades: 0
-  healUpgrades: 0
 --- !u!114 &-143426143757701958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1519,8 +1506,6 @@ MonoBehaviour:
   climbOffGraceTime: 0.5
   hasAbility: 0
   isClimbing: 0
-  wallClimbClip: {fileID: 8300000, guid: 2ed9c4f18e91f436fad2de8381304463, type: 3}
-  wallClimbVolume: 1
 --- !u!1 &5568687441649906527
 GameObject:
   m_ObjectHideFlags: 0
