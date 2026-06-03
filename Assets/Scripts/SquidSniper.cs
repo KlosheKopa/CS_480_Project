@@ -30,14 +30,25 @@ public class SquidSniper : MonoBehaviour
     public float flipDuration = 0.06f;
     public float returnDuration = 1.5f;
 
+    [Header("Animation")]
+    private Animator animator;
+
     [Header("References")]
     public Transform siphon;
     public Transform shootPoint;
     public Transform forwardReference;
 
+    [Header("Audio")]
+    public AudioClip detectedSound;
+    public AudioClip shootSound;
+    public AudioClip rotateSound;
+    public AudioClip deathSound;
+    [Range(0f, 1f)] public float soundVolume = 1f;
+
     [HideInInspector] public bool isDead = false;
 
     private Transform player;
+    private AudioSource audioSource;
     private State currentState = State.Idle;
     private Quaternion originalRotation;
     private Vector3 originalPosition;
@@ -51,6 +62,7 @@ public class SquidSniper : MonoBehaviour
         originalRotation = transform.rotation;
         originalPosition = transform.position;
         currentHealth = maxHealth;
+        animator = GetComponentInChildren<Animator>();
 
         Collider col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
@@ -59,6 +71,11 @@ public class SquidSniper : MonoBehaviour
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.useGravity = false;
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f;
     }
 
     void Update()
@@ -112,6 +129,8 @@ public class SquidSniper : MonoBehaviour
         }
         else
         {
+            if (animator != null) animator.SetTrigger("Flinch");
+
             if (currentState == State.Idle || currentState == State.Searching)
             {
                 AlertFromBubble();
@@ -121,6 +140,10 @@ public class SquidSniper : MonoBehaviour
 
     private IEnumerator DeathSequence()
     {
+        PlaySound(deathSound);
+
+        if (animator != null) animator.SetTrigger("Death");
+
         PlayerStats stats = FindFirstObjectByType<PlayerStats>();
         if (stats != null)
         {
@@ -208,6 +231,7 @@ public class SquidSniper : MonoBehaviour
     private IEnumerator PrepareToShoot()
     {
         currentState = State.Preparing;
+        PlaySound(detectedSound);
 
         float timer = 0f;
         while (timer < prepareTime)
@@ -223,10 +247,11 @@ public class SquidSniper : MonoBehaviour
     private IEnumerator ShootPhase()
     {
         currentState = State.Shooting;
+        PlaySound(rotateSound);
 
         Quaternion startRot = transform.rotation;
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
-        Quaternion targetFlip = Quaternion.LookRotation(directionToPlayer) * Quaternion.Euler(-90f, 0f, 0f);
+        /*Quaternion targetFlip = Quaternion.LookRotation(directionToPlayer) * Quaternion.Euler(-90f, 0f, 0f);
 
         Vector3 startPos = transform.position;
         Vector3 targetPos = startPos;
@@ -241,6 +266,7 @@ public class SquidSniper : MonoBehaviour
             transform.position = Vector3.Lerp(startPos, targetPos, progress);
             yield return null;
         }
+        */
 
         int bulletCount = Random.Range(minBullets, maxBullets + 1);
         for (int i = 0; i < bulletCount; i++)
@@ -251,7 +277,7 @@ public class SquidSniper : MonoBehaviour
 
         yield return new WaitForSeconds(postShotHoldTime);
 
-        Quaternion currentRot = transform.rotation;
+        /*Quaternion currentRot = transform.rotation;
         Quaternion targetReturnRot = Quaternion.Euler(0f, currentRot.eulerAngles.y, currentRot.eulerAngles.z);
 
         float returnT = 0f;
@@ -262,7 +288,7 @@ public class SquidSniper : MonoBehaviour
             transform.rotation = Quaternion.Slerp(currentRot, targetReturnRot, progress);
             transform.position = Vector3.Lerp(transform.position, originalPosition, progress);
             yield return null;
-        }
+        }*/
 
         StartCoroutine(ReturnAndCooldown());
     }
@@ -271,10 +297,15 @@ public class SquidSniper : MonoBehaviour
     {
         if (inkProjectilePrefab == null || shootPoint == null || player == null || isDead) return;
 
+        Debug.Log($"Squid is shooting ink! Animator component is null: {animator == null}");
+
+        if (animator != null) animator.SetTrigger("Attack");
+
         Vector3 directionToPlayer = (player.position - shootPoint.position).normalized;
         Vector3 spawnPos = shootPoint.position + directionToPlayer * 0.8f;
 
         GameObject ink = Instantiate(inkProjectilePrefab, spawnPos, Quaternion.LookRotation(directionToPlayer));
+        PlaySound(shootSound);
 
         InkBullet bulletScript = ink.GetComponent<InkBullet>();
         if (bulletScript != null)
@@ -301,6 +332,7 @@ public class SquidSniper : MonoBehaviour
         if (distance <= detectionRange && !CanSeePlayerFromFront())
         {
             currentState = State.Searching;
+            PlaySound(rotateSound);
             yield return new WaitForSeconds(searchDuration);
 
             if (!CanSeePlayerFromFront())
@@ -359,5 +391,11 @@ public class SquidSniper : MonoBehaviour
             Quaternion currentYRot = Quaternion.Euler(transform.eulerAngles.x, targetRot.eulerAngles.y, transform.eulerAngles.z);
             transform.rotation = Quaternion.Slerp(transform.rotation, currentYRot, Time.deltaTime * (bodyTurnSpeed / 90f));
         }
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource == null || clip == null) return;
+        audioSource.PlayOneShot(clip, soundVolume);
     }
 }

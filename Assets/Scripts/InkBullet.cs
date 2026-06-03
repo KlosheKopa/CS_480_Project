@@ -42,9 +42,9 @@ public class InkBullet : MonoBehaviour
     {
         if (!canCollide) return;
 
-        // === Pass through player's bubbles (do not despawn) ===
         if (other.GetComponent<BubbleBehavior>() != null)
         {
+            Destroy(gameObject);
             return;
         }
 

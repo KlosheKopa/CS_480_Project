@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
+    [Header("Persistent Data Reference")]
+    [Tooltip("Drag the ActivePlayerRunData ScriptableObject asset here")]
+    public PlayerStatData runData;
+
     [Header("Base Stats")]
     public float maxHealth = 100f;
     public float maxStamina = 3f;
@@ -22,23 +26,24 @@ public class PlayerStats : MonoBehaviour
     [Header("Dash")]
     public float dashDistanceMultiplier = 1f;
 
-    [Header("Level & EXP")]
-    public int currentLevel = 1;
-    public int currentEXP = 0;
-    public int expToNextLevel = 10;
-    public int maxLevel = 56;               //11 upgrades = 55 level + 1
+    // REDIRECTS: Pull values dynamically directly out of the ScriptableObject container asset
+    public int currentLevel { get => runData.currentLevel; set => runData.currentLevel = value; }
+    public int currentEXP { get => runData.currentEXP; set => runData.currentEXP = value; }
+    public int expToNextLevel { get => runData.expToNextLevel; set => runData.expToNextLevel = value; }
 
-    public int healthUpgrades = 0;
-    public int staminaUpgrades = 0;
-    public int regenPauseUpgrades = 0;
-    public int regenSpeedUpgrades = 0;
-    public int dashDistanceUpgrades = 0;
-    public int bubbleDamageUpgrades = 0;
-    public int bubbleFireRateUpgrades = 0;
-    public int bubbleSpeedUpgrades = 0;
-    public int defenseUpgrades = 0;
-    public int invincibilityUpgrades = 0;
-    public int healUpgrades = 0;
+    public int healthUpgrades { get => runData.healthUpgrades; set => runData.healthUpgrades = value; }
+    public int staminaUpgrades { get => runData.staminaUpgrades; set => runData.staminaUpgrades = value; }
+    public int regenPauseUpgrades { get => runData.regenPauseUpgrades; set => runData.regenPauseUpgrades = value; }
+    public int regenSpeedUpgrades { get => runData.regenSpeedUpgrades; set => runData.regenSpeedUpgrades = value; }
+    public int dashDistanceUpgrades { get => runData.dashDistanceUpgrades; set => runData.dashDistanceUpgrades = value; }
+    public int bubbleDamageUpgrades { get => runData.bubbleDamageUpgrades; set => runData.bubbleDamageUpgrades = value; }
+    public int bubbleFireRateUpgrades { get => runData.bubbleFireRateUpgrades; set => runData.bubbleFireRateUpgrades = value; }
+    public int bubbleSpeedUpgrades { get => runData.bubbleSpeedUpgrades; set => runData.bubbleSpeedUpgrades = value; }
+    public int defenseUpgrades { get => runData.defenseUpgrades; set => runData.defenseUpgrades = value; }
+    public int invincibilityUpgrades { get => runData.invincibilityUpgrades; set => runData.invincibilityUpgrades = value; }
+    public int healUpgrades { get => runData.healUpgrades; set => runData.healUpgrades = value; }
+
+    [HideInInspector] public int maxLevel = 56;
 
     public float CurrentHealth { get; set; }
     public float CurrentStamina { get; set; }
@@ -50,7 +55,6 @@ public class PlayerStats : MonoBehaviour
 
     private int pendingLevelUps = 0;
 
-    // This runs every time Unity shows the Inspector or the script is recompiled
     private void OnValidate()
     {
         maxLevel = 56;
@@ -58,14 +62,16 @@ public class PlayerStats : MonoBehaviour
 
     private void Awake()
     {
-        maxLevel = 56;   // Force it at runtime too
+        maxLevel = 56;
         RecalculateAllStats();
         if (CurrentHealth <= 0) CurrentHealth = maxHealth;
     }
 
-
     public void RecalculateAllStats()
     {
+        // Safe check if you forgot to link the asset file
+        if (runData == null) return;
+
         maxHealth = 100f + healthUpgrades * 50f;
         maxStamina = 3f + staminaUpgrades * 1f;
         staminaRegenPauseAfterDash = 1.5f - regenPauseUpgrades * 0.2f;
@@ -128,6 +134,13 @@ public class PlayerStats : MonoBehaviour
 
             Debug.Log("=== ALL LEVEL UPS COMPLETE - Game fully resumed ===");
         }
+    }
+
+    // This method handles player death cleanly
+    public void HandleDeath()
+    {
+        if (runData != null) runData.ResetToDefaults();
+        // Trigger scene reload or Game Over screen sequence here
     }
 
     public void UpgradeMaxHealth() { healthUpgrades = Mathf.Min(healthUpgrades + 1, 5); RecalculateAllStats(); CurrentHealth = maxHealth; }

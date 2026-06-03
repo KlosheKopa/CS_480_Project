@@ -1,14 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 
 public class BossInteractTrigger : MonoBehaviour
 {
     [Header("Settings")]
-    public KeyCode interactKey = KeyCode.E;
     public GameObject bossPrefab;
-    public float spawnHeightOffset = 5f; // Adjust this to spawn higher/lower
-    
+    public float spawnHeightOffset = 5f;
+
     [Header("UI Reference")]
     public BossUI bossHealthUI;
     public GameObject promptUI;
@@ -16,9 +14,11 @@ public class BossInteractTrigger : MonoBehaviour
     private bool playerInRange = false;
     private bool hasSpawned = false;
 
+    // Explicit cache to store the player's transform when they step into the trigger zone
+    private Transform playerTransform;
+
     void Update()
     {
-        // Checks if the specific key you chose is pressed using the New System
         if (playerInRange && !hasSpawned && Keyboard.current[Key.E].wasPressedThisFrame)
         {
             SpawnBoss();
@@ -29,13 +29,39 @@ public class BossInteractTrigger : MonoBehaviour
     {
         hasSpawned = true;
         Vector3 spawnPos = transform.position + (Vector3.up * spawnHeightOffset);
-        GameObject boss = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
+        GameObject bossInstance = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
+
         if (promptUI != null) promptUI.SetActive(false);
 
-        // Link the boss to the UI
+        // === FIX: Explicitly pass the player reference directly to the spawned boss ===
+        if (playerTransform != null)
+        {
+            // Look for your script component on the newly instantiated instance
+            JellyBoss jellyBossScript = bossInstance.GetComponentInChildren<JellyBoss>();
+            if (jellyBossScript != null)
+            {
+                jellyBossScript.player = playerTransform;
+                Debug.Log($"[Spawn System] Successfully injected Player reference into spawned {bossInstance.name}");
+            }
+        }
+        else
+        {
+            Debug.LogError("[Spawn System] Failed to spawn boss correctly because playerTransform was null!");
+        }
+
+        // Dynamically search the spawned prefab for ANY script that uses IBoss for UI setup
         if (bossHealthUI != null)
         {
-            bossHealthUI.SetupBoss(boss.GetComponent<Jellyfish>());
+            IBoss bossInterface = bossInstance.GetComponentInChildren<IBoss>();
+
+            if (bossInterface != null)
+            {
+                bossHealthUI.SetupBoss(bossInterface);
+            }
+            else
+            {
+                Debug.LogError($"The spawned prefab '{bossPrefab.name}' does not have a script that implements the IBoss interface!");
+            }
         }
 
         gameObject.SetActive(false);
@@ -46,7 +72,11 @@ public class BossInteractTrigger : MonoBehaviour
         if (other.CompareTag("Player") && !hasSpawned)
         {
             playerInRange = true;
-            if (promptUI != null) promptUI.SetActive(true); // Show the prompt
+
+            // Capture the exact moving player transform entering this exact zone
+            playerTransform = other.transform;
+
+            if (promptUI != null) promptUI.SetActive(true);
         }
     }
 
@@ -55,7 +85,11 @@ public class BossInteractTrigger : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = false;
-            if (promptUI != null) promptUI.SetActive(false); // Hide the prompt
+
+            // Clear the reference safely when walking away
+            playerTransform = null;
+
+            if (promptUI != null) promptUI.SetActive(false);
         }
     }
 }

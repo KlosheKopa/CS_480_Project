@@ -5,10 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - Jellyfish
-  - Starfish
   - SquidSniper
-  - Climbable
-  - LockedDoor
+  - Starfish
+  - JellyBoss
+  - Leviathan
   layers:
   - Default
   - TransparentFX
