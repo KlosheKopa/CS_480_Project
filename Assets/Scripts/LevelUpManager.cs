@@ -11,6 +11,11 @@ public class LevelUpManager : MonoBehaviour
     public GameObject levelUpPanel;
     public UpgradeButton[] upgradeButtons;
 
+    [Header("Input Settings")]
+    [Tooltip("Time in seconds that buttons are unclickable after opening.")]
+    public float inputDelayDuration = 0.4f;
+    private float canClickTime = 0f;
+
     private PlayerStats stats;
     private ClawShooter clawShooter;
 
@@ -35,6 +40,9 @@ public class LevelUpManager : MonoBehaviour
         Cursor.visible = true;
 
         levelUpPanel.SetActive(true);
+
+        // Calculate unlock time using unscaledTime because Time.timeScale is 0f
+        canClickTime = Time.unscaledTime + inputDelayDuration;
 
         List<string> available = new List<string>();
 
@@ -102,6 +110,12 @@ public class LevelUpManager : MonoBehaviour
 
     public void ChooseUpgrade(string upgradeKey)
     {
+        // === NEW: Block clicks if we are still within the input delay window ===
+        if (Time.unscaledTime < canClickTime)
+        {
+            return;
+        }
+
         switch (upgradeKey)
         {
             case "MaxHealth": stats.UpgradeMaxHealth(); break;

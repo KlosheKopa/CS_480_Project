@@ -379,6 +379,10 @@ public class BubbleBehavior : MonoBehaviour
             return;
 
         }
+        else if (other.CompareTag("Healing"))
+        {
+            return;
+        }
 
         // Destroy on walls / environment
         if (bubblePopClip != null)

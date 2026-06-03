@@ -99,11 +99,16 @@ public class Jellyfish : MonoBehaviour
     {
         isDead = true;
 
+        if (TryGetComponent<LootDropper>(out LootDropper dropper))
+        {
+            dropper.DropLoot();
+        }
+
         // === NEW: Award 1 EXP to the player ===
         PlayerStats playerStats = GameObject.FindWithTag("Player").GetComponent<PlayerStats>();
         if (playerStats != null)
         {
-            playerStats.AddEXP(1);
+            playerStats.AddEXP(4);
             Debug.Log("Jellyfish killed - Awarded 1 EXP to player");
         }
 

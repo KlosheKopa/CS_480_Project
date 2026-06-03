@@ -4161,6 +4161,7 @@ GameObject:
   - component: {fileID: 5850578553012415794}
   - component: {fileID: 5905256939213861738}
   - component: {fileID: 7209899170873862391}
+  - component: {fileID: 7397664731134228279}
   m_Layer: 0
   m_Name: CrabMonsterBoss
   m_TagString: Untagged
@@ -4280,6 +4281,20 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: 7fc68b398b5d34e5d94a6b167a345a02, type: 3}
   soundVolume: 0.899
   isDead: 0
+--- !u!114 &7397664731134228279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5792744366562842766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916a09c51da68704f93f4c5390195120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  healingPrefab: {fileID: 0}
+  dropChance: 100
 --- !u!1 &5792748071347383548
 GameObject:
   m_ObjectHideFlags: 0

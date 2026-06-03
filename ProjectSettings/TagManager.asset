@@ -9,6 +9,8 @@ TagManager:
   - Starfish
   - JellyBoss
   - Leviathan
+  - Climbable
+  - Healing
   layers:
   - Default
   - TransparentFX

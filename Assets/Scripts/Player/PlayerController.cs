@@ -321,7 +321,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // ====================== KEY + DOOR DETECTION ======================
-    private void OnControllerColliderHit(ControllerColliderHit hit)
+    /*private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (hit.gameObject.CompareTag("LockedDoor"))
         {
@@ -336,5 +336,5 @@ public class PlayerController : MonoBehaviour
                 door.OpenTheDoor();
             }
         }
-    }
+    }*/
 }
