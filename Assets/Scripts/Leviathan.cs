@@ -41,9 +41,27 @@ public class Leviathan : MonoBehaviour, IBoss
     public float maxAnchorRadius = 25f;
     public float minimumDepthFloor = 0f;
 
+    [Header("Audio")]
+    public AudioClip patrolSwimClip;
+    public AudioClip fastSwimClip;
+    public AudioClip attackClip;
+    public AudioClip deathClip;
+    public AudioClip bubbleHitClip;
+    [Range(0f, 1f)] public float loopVolume = 1f;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+
     private Vector3 wanderTarget;
     private float minWanderDistance = 3f;
     private bool isBusy = false;
+    private AudioSource loopAudioSource;
+    private AudioSource sfxAudioSource;
+    private int lastObservedStateHash;
+    private bool deathSoundPlayed;
+
+    private static readonly int PatrolSwimState = Animator.StringToHash("patrol_swimF");
+    private static readonly int FastSwimState = Animator.StringToHash("fast_swimF");
+    private static readonly int AttackState = Animator.StringToHash("attack");
+    private static readonly int DeathState = Animator.StringToHash("ded");
 
     private enum BossState { Patrol, Dead }
     private BossState currentState = BossState.Patrol;
@@ -52,10 +70,47 @@ public class Leviathan : MonoBehaviour, IBoss
     public float CurrentHealth => currentHealth;
     public bool IsDead => currentState == BossState.Dead;
 
+#if UNITY_EDITOR
+    private const string PatrolSoundPath = "Assets/Audio/enemy_sounds/Leviathan_sounds/patrol_swimF.mp3";
+    private const string FastSwimSoundPath = "Assets/Audio/enemy_sounds/Leviathan_sounds/fast_swimF.mp3";
+    private const string AttackSoundPath = "Assets/Audio/enemy_sounds/Leviathan_sounds/levi_attack.mp3";
+    private const string DeathSoundPath = "Assets/Audio/enemy_sounds/Leviathan_sounds/Levi_die.mp3";
+    private const string HitSoundPath = "Assets/Audio/enemy_sounds/Leviathan_sounds/levi_get_hit.mp3";
+
+    private void Reset()
+    {
+        AssignDefaultSounds();
+    }
+
+    private void OnValidate()
+    {
+        AssignDefaultSounds();
+    }
+
+    private void AssignDefaultSounds()
+    {
+        if (patrolSwimClip == null)
+            patrolSwimClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(PatrolSoundPath);
+        if (fastSwimClip == null)
+            fastSwimClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(FastSwimSoundPath);
+        if (attackClip == null)
+            attackClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(AttackSoundPath);
+        if (deathClip == null)
+            deathClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(DeathSoundPath);
+        if (bubbleHitClip == null)
+            bubbleHitClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(HitSoundPath);
+    }
+#endif
+
+    void Awake()
+    {
+        animator = GetComponent<Animator>();
+        ConfigureAudioSources();
+    }
 
     void Start()
     {
-        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponent<Animator>();
         currentHealth = maxHealth;
 
         if (player == null) player = GameObject.FindWithTag("Player")?.transform;
@@ -68,18 +123,21 @@ public class Leviathan : MonoBehaviour, IBoss
         }
 
         SetNewWanderTarget();
+        SyncAudioWithAnimatorState();
     }
 
     void Update()
     {
-        if (currentState == BossState.Dead || isBusy) return;
+        if (currentState == BossState.Dead) return;
         if (currentHealth <= 0)
         {
-            currentState = BossState.Dead;
-            animator.SetTrigger("Death");
-            Destroy(gameObject, 3f);
+            Die();
             return;
         }
+
+        SyncAudioWithAnimatorState();
+
+        if (isBusy) return;
 
         float currentDistanceToPlayer = player != null ? Vector3.Distance(transform.position, player.position) : float.MaxValue;
 
@@ -233,5 +291,101 @@ public class Leviathan : MonoBehaviour, IBoss
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
+    }
+
+    public void TakeBubbleDamage(float damage)
+    {
+        TakeDamage(damage);
+
+        if (currentHealth > 0)
+            PlayOneShot(bubbleHitClip);
+    }
+
+    private void ConfigureAudioSources()
+    {
+        loopAudioSource = gameObject.AddComponent<AudioSource>();
+        loopAudioSource.playOnAwake = false;
+        loopAudioSource.loop = true;
+        loopAudioSource.spatialBlend = 1f;
+
+        sfxAudioSource = gameObject.AddComponent<AudioSource>();
+        sfxAudioSource.playOnAwake = false;
+        sfxAudioSource.loop = false;
+        sfxAudioSource.spatialBlend = 1f;
+    }
+
+    private void SyncAudioWithAnimatorState()
+    {
+        if (animator == null) return;
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        int stateHash = stateInfo.shortNameHash;
+        if (stateHash == lastObservedStateHash) return;
+
+        lastObservedStateHash = stateHash;
+
+        if (stateHash == PatrolSwimState)
+        {
+            PlayLoop(patrolSwimClip);
+        }
+        else if (stateHash == FastSwimState)
+        {
+            PlayLoop(fastSwimClip);
+        }
+        else if (stateHash == AttackState)
+        {
+            StopLoop();
+            PlayOneShot(attackClip);
+        }
+        else if (stateHash == DeathState)
+        {
+            StopLoop();
+            PlayDeathSound();
+        }
+        else
+        {
+            StopLoop();
+        }
+    }
+
+    private void PlayLoop(AudioClip clip)
+    {
+        if (clip == null || loopAudioSource == null) return;
+        if (loopAudioSource.clip == clip && loopAudioSource.isPlaying) return;
+
+        loopAudioSource.clip = clip;
+        loopAudioSource.volume = loopVolume;
+        loopAudioSource.Play();
+    }
+
+    private void StopLoop()
+    {
+        if (loopAudioSource != null && loopAudioSource.isPlaying)
+            loopAudioSource.Stop();
+    }
+
+    private void PlayOneShot(AudioClip clip)
+    {
+        if (clip == null || sfxAudioSource == null) return;
+
+        sfxAudioSource.volume = sfxVolume;
+        sfxAudioSource.PlayOneShot(clip);
+    }
+
+    private void PlayDeathSound()
+    {
+        if (deathSoundPlayed) return;
+
+        deathSoundPlayed = true;
+        PlayOneShot(deathClip);
+    }
+
+    private void Die()
+    {
+        currentState = BossState.Dead;
+        StopLoop();
+        PlayDeathSound();
+        animator.SetTrigger("Death");
+        Destroy(gameObject, deathClip != null ? Mathf.Max(3f, deathClip.length) : 3f);
     }
 }
