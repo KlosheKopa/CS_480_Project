@@ -4293,7 +4293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a09c51da68704f93f4c5390195120, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  healingPrefab: {fileID: 0}
+  itemPrefab: {fileID: 9186205387521144905, guid: 2fb9d811031af4941b457041d426d12e, type: 3}
   dropChance: 100
 --- !u!1 &5792748071347383548
 GameObject:

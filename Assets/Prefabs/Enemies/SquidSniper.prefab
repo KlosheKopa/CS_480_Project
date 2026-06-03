@@ -414,8 +414,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4179f5a3bc3773142a5227e65f37b430, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SquidSniper
-  maxHealth: 20
-  expOnDeath: 40
+  maxHealth: 40
+  expOnDeath: 35
   detectionRange: 50
   touchDamage: 15
   touchDamageCooldown: 1

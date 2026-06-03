@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5618994057783546533}
   - component: {fileID: 6445623528668570074}
   - component: {fileID: 8518586709623734306}
+  - component: {fileID: -9175826657887019869}
   m_Layer: 0
   m_Name: starfish
   m_TagString: Starfish
@@ -166,9 +167,17 @@ MonoBehaviour:
   deathFallTime: 3
   despawnDelay: 8
   expOnDeath: 3
-  spinSound: {fileID: 8300000, guid: 20ee36c86fb64491aa258f7f71968af2, type: 3}
-  spinContinueSound: {fileID: 8300000, guid: bf2beda8c42fc4e5fae6a4a9908c1231, type: 3}
-  hitPlayerSound: {fileID: 8300000, guid: c7605cbdfa3ae44b0b6cf4c1b4718bbe, type: 3}
-  hurtSound: {fileID: 8300000, guid: ae3e46be7808f483a9f865e3d443be46, type: 3}
-  soundVolume: 1
-  hitPlayerSoundCooldown: 2
+--- !u!114 &-9175826657887019869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5850121534466084380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916a09c51da68704f93f4c5390195120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LootDropper
+  itemPrefab: {fileID: 9186205387521144905, guid: 2fb9d811031af4941b457041d426d12e, type: 3}
+  dropChance: 40

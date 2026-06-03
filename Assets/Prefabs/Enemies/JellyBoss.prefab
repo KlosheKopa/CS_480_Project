@@ -165,6 +165,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e329ba7c44bcf28488dd6ca3bbe5f024, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8693604195976613603}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e329ba7c44bcf28488dd6ca3bbe5f024, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3575023238747586644}
   m_SourcePrefab: {fileID: 100100000, guid: e329ba7c44bcf28488dd6ca3bbe5f024, type: 3}
 --- !u!4 &411172957117022927 stripped
 Transform:
@@ -263,6 +266,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9fe9363fd9232041a6cd6a48bf4645f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyBoss
+  player: {fileID: 1106490759393968609, guid: 14703fe93f739c94f9038c7f6cca05c6, type: 3}
+  shootPoint: {fileID: 411172957117022927}
   maxHealth: 80
   moveSpeed: 4
   detectionRange: 100
@@ -275,15 +280,24 @@ MonoBehaviour:
   projectileSpeed: 18
   minBullets: 5
   maxBullets: 6
-  shootPoint: {fileID: 411172957117022927}
-  player: {fileID: 1106490759393968609, guid: 14703fe93f739c94f9038c7f6cca05c6, type: 3}
   bubblePopParticles: {fileID: 4918059086496244249, guid: 114d6fdab75eff14090e26764a517311, type: 3}
-  floatingSound: {fileID: 0}
-  detectedSound: {fileID: 0}
-  shootSound: {fileID: 0}
-  hurtSound: {fileID: 0}
-  deathSound: {fileID: 0}
-  soundVolume: 1
-  greenFishPrefab: {fileID: 0}
-  dropEveryXItems: 3
-  isDead: 0
+  floatingSound: {fileID: 8300000, guid: 475e3f014315e4dfb9c29a717d07a31a, type: 3}
+  detectedSound: {fileID: 8300000, guid: 03019e519c5e94a78b48400e3e419c93, type: 3}
+  shootSound: {fileID: 8300000, guid: 1d0cc3f1318874b0bb1e8e53d3c91efb, type: 3}
+  hurtSound: {fileID: 8300000, guid: dcdaef9a37203403fa4ea0750231bb8f, type: 3}
+  deathSound: {fileID: 8300000, guid: d068187480f55404f9c9452efad673ce, type: 3}
+  soundVolume: 0.611
+--- !u!114 &3575023238747586644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8017634783249782714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916a09c51da68704f93f4c5390195120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LootDropper
+  itemPrefab: {fileID: 9186205387521144905, guid: 2fb9d811031af4941b457041d426d12e, type: 3}
+  dropChance: 100

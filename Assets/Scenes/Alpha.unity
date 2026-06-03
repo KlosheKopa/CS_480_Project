@@ -14321,24 +14321,17 @@ Transform:
   - {fileID: 1445650314}
   m_Father: {fileID: 1625777874}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &398502964 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3027062535900800873, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
+--- !u!114 &398502970 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6479525207662402430, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
   m_PrefabInstance: {fileID: 1331668295}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &398502970
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 398502964}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e807e638aac70448accd922cb289180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalStageTransition
-  nextSceneIndex: 1
 --- !u!1 &398506028
 GameObject:
   m_ObjectHideFlags: 0
@@ -19638,6 +19631,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -19691,7 +19688,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -35620,7 +35617,7 @@ PrefabInstance:
     - target: {fileID: 3533281835852972244, guid: f36340fed3ec48c44a2cbacbf42cb2de, type: 3}
       propertyPath: bossPrefab
       value: 
-      objectReference: {fileID: 5319914597022973546, guid: 800c73563f8ced942b67acbad2165319, type: 3}
+      objectReference: {fileID: 8017634783249782714, guid: 363d3e23c2c0af5419d5c9b8e64d6f1a, type: 3}
     - target: {fileID: 3533281835852972244, guid: f36340fed3ec48c44a2cbacbf42cb2de, type: 3}
       propertyPath: bossHealthUI
       value: 
@@ -46728,10 +46725,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3027062535900800873, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5107924582276146934, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
       propertyPath: m_LocalPosition.x
       value: 269.07626
@@ -46776,18 +46769,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Gate
       objectReference: {fileID: 0}
-    - target: {fileID: 6361509499789387057, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
-      propertyPath: m_IsKinematic
-      value: 1
+    - target: {fileID: 6479525207662402430, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
+      propertyPath: nextSceneIndex
+      value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7861160207761360392, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3027062535900800873, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 398502970}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f7c89b35ee37a5e49b4c7c6b04a9be71, type: 3}
 --- !u!1 &1332133225
 GameObject:
@@ -49796,6 +49785,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -49849,7 +49842,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -53734,6 +53727,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -53787,7 +53784,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -62020,6 +62017,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -62073,7 +62074,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -68891,6 +68892,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -68944,7 +68949,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -71708,6 +71713,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -71761,7 +71770,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -74556,6 +74565,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: targetTerrain
       value: 
       objectReference: {fileID: 509283017}
@@ -74609,7 +74622,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6003370777847123271, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -78243,6 +78256,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1106211469897959969, guid: 134eda1dde6529440afca55f913990a2, type: 3}
+      propertyPath: maxEnemies
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5450928765009156169, guid: 134eda1dde6529440afca55f913990a2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 57.4

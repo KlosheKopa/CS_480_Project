@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   itemPrefab: {fileID: 9186205387521144905, guid: 2fb9d811031af4941b457041d426d12e, type: 3}
-  dropChance: 100
+  dropChance: 34
 --- !u!1 &3876868367264744292
 GameObject:
   m_ObjectHideFlags: 0
